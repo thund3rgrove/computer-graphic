@@ -3,6 +3,7 @@
 #include <GL/gl.h>
 #include <GL/glu.h>
 #include <windowsx.h>
+#include <vector>
 
 #define STB_IMAGE_IMPLEMENTATION
 #include "lib/stb-master/stb_image.h"
@@ -48,10 +49,16 @@ public:
         return (clickX >= x && clickX <= x + width && clickY >= y && clickY <= y + height);
     }
 
+    void onClick() {
+        std::cout << "Button does not have onClick method set up\n";
+    }
+
     void render() {
-        glColor3f(0.0f, 1.0f, 1.0f); // Set color to red
+//        glColor3f(0.0f, 1.0f, 1.0f);
+        glEnable(GL_TEXTURE_2D);
 
         glBindTexture(GL_TEXTURE_2D, textureID);
+
         glBegin(GL_QUADS);
             glTexCoord2f(0.0f, 0.0f);
             glVertex2f(x, y);
@@ -62,6 +69,15 @@ public:
             glTexCoord2f(0.0f, .5f);
             glVertex2f(x, y + height);
         glEnd();
+
+        glDisable(GL_TEXTURE_2D);
+    }
+};
+
+class RenderTextureButton : Button {
+public:
+    void onClick() {
+
     }
 };
 
@@ -184,9 +200,22 @@ LRESULT CALLBACK WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam) 
             )) {
 //                std::cout << "YES\n";
                 isRenderTexture = !isRenderTexture;
+//                button1.onClick();
             }/* else {
                 std::cout << "NO\n";
             }*/
+
+            if (button2.isClicked(
+                    (float)GET_X_LPARAM(lParam), (float)GET_Y_LPARAM(lParam)
+            )) {
+                std::cout << "Second btn was pressed\n";
+            }
+
+            if (button3.isClicked(
+                    (float)GET_X_LPARAM(lParam), (float)GET_Y_LPARAM(lParam)
+            )) {
+                std::cout << "Third btn was pressed\n";
+            }
 
             break;
         }
