@@ -66,8 +66,8 @@ public:
 };
 
 Button button1(100.0f, 0.0f, 100.0f, 50.0f, 0); // Button 1
-Button button2(0.0f, 0.0f, 100.0f, 50.0f, 0); // Button 2
-Button button3(100.0f, 0.0f, 100.0f, 50.0f, 0); // Button 3
+Button button2(210.0f, 0.0f, 100.0f, 50.0f, 0); // Button 2
+Button button3(320.0f, 0.0f, 100.0f, 50.0f, 0); // Button 3
 
 int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int nCmdShow) {
     WNDCLASSEX wcex;
@@ -139,8 +139,8 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 //            renderRectangle();
 
              button1.render(); // Render button 1
-            // button2.render(); // Render button 2
-            // button3.render(); // Render button 3
+             button2.render(); // Render button 2
+             button3.render(); // Render button 3
 
             SwapBuffers(hDC);
 
@@ -277,7 +277,8 @@ GLuint loadTexture(const char *filename, int *width, int *height) {
     }
 }
 
-
+// Render the texture
+/*
 void renderTexture(GLuint textureID) {
     glEnable(GL_TEXTURE_2D);
 
@@ -320,6 +321,59 @@ void renderTexture(GLuint textureID) {
         std::cerr << "OpenGL error: " << gluErrorString(error) << std::endl;
     }
 }
+*/
+void renderTexture(GLuint textureID) {
+    glEnable(GL_TEXTURE_2D);
+    glBindTexture(GL_TEXTURE_2D, textureID); // Bind the texture
+
+    // glColor3f(1.0f, 1.0f, 1.0f);
+    // Set the texture environment mode to GL_REPLACE
+    glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_REPLACE);
+
+    // Calculate the aspect ratio of the texture
+    float textureAspect = (float)imageWidth / (float)imageHeight;
+
+    // Calculate the aspect ratio of the screen
+    RECT rect;
+    GetClientRect(hwnd, &rect);
+    float screenAspect = (float)(rect.right - rect.left) / (float)(rect.bottom - rect.top);
+
+    // Determine the portion of the screen to cover with the texture
+    float texWidth, texHeight;
+    if (textureAspect > screenAspect) {
+        // Texture is wider than the screen
+        texWidth = (rect.right - rect.left);
+        texHeight = texWidth / textureAspect;
+    } else {
+        // Texture is taller than or equal to the screen
+        texHeight = (rect.bottom - rect.top);
+        texWidth = texHeight * textureAspect;
+    }
+
+    float offsetX = ((rect.right - rect.left) - texWidth) / 2.0f;
+    float offsetY = ((rect.bottom - rect.top) - texHeight) / 2.0f;
+
+    // Render the texture within the calculated portion of the screen
+    glBegin(GL_QUADS);
+    glTexCoord2f(0.0f, 0.0f);
+    glVertex2f(offsetX, offsetY);  // Top-left corner
+    glTexCoord2f(1.0f, 0.0f);
+    glVertex2f(offsetX + texWidth, offsetY);  // Top-right corner
+    glTexCoord2f(1.0f, 1.0f);
+    glVertex2f(offsetX + texWidth, offsetY + texHeight);  // Bottom-right corner
+    glTexCoord2f(0.0f, 1.0f);
+    glVertex2f(offsetX, offsetY + texHeight);  // Bottom-left corner
+    glEnd();
+
+    glDisable(GL_TEXTURE_2D);
+
+    GLenum error = glGetError();
+    if (error != GL_NO_ERROR) {
+        std::cerr << "OpenGL error: " << gluErrorString(error) << std::endl;
+    }
+}
+
+//
 
 
 void renderRectangle() {
