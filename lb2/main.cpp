@@ -2,6 +2,7 @@
 #include <iostream>
 #include <GL/gl.h>
 #include <GL/glu.h>
+#include <windowsx.h>
 
 #define STB_IMAGE_IMPLEMENTATION
 #include "lib/stb-master/stb_image.h"
@@ -23,6 +24,7 @@ int imageWidth, imageHeight;
 GLuint textureID;
 
 void renderTexture(GLuint textureID);
+bool isRenderTexture = false;
 
 void renderRectangle();
 
@@ -37,25 +39,33 @@ public:
     }
 
     bool isClicked(float clickX, float clickY) {
+/*
+        std::cout <<
+            "BUTTON (" << x << ", " << y << ") :: " <<
+            clickX << ' ' << clickY << '\n';
+*/
+
         return (clickX >= x && clickX <= x + width && clickY >= y && clickY <= y + height);
     }
 
     void render() {
+        glColor3f(0.0f, 1.0f, 1.0f); // Set color to red
+
         glBindTexture(GL_TEXTURE_2D, textureID);
         glBegin(GL_QUADS);
-        glTexCoord2f(0.0f, 0.0f);
-        glVertex2f(x, y);
-        glTexCoord2f(1.0f, 0.0f);
-        glVertex2f(x + width, y);
-        glTexCoord2f(1.0f, 1.0f);
-        glVertex2f(x + width, y + height);
-        glTexCoord2f(0.0f, 1.0f);
-        glVertex2f(x, y + height);
+            glTexCoord2f(0.0f, 0.0f);
+            glVertex2f(x, y);
+            glTexCoord2f(.5f, 0.5f);
+            glVertex2f(x + width, y);
+            glTexCoord2f(.5f, .5f);
+            glVertex2f(x + width, y + height);
+            glTexCoord2f(0.0f, .5f);
+            glVertex2f(x, y + height);
         glEnd();
     }
 };
 
-Button button1(-100.0f, 0.0f, 100.0f, 50.0f, 0); // Button 1
+Button button1(100.0f, 0.0f, 100.0f, 50.0f, 0); // Button 1
 Button button2(0.0f, 0.0f, 100.0f, 50.0f, 0); // Button 2
 Button button3(100.0f, 0.0f, 100.0f, 50.0f, 0); // Button 3
 
@@ -116,18 +126,19 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
             glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT); // Clear both color and depth buffers
             glDisable(GL_DEPTH_TEST);
 
-            std::cout << "Clearing screen..." << std::endl;
-            std::cout << "Rendering texture..." << std::endl;
+//            std::cout << "Clearing screen..." << std::endl;
+//            std::cout << "Rendering texture..." << std::endl;
 
             // Reset color to default (white) before rendering the texture
             // glColor3f(0.0f, 1.0f, 1.0f);
-            renderTexture(textureID); // Render the texture
+            if (isRenderTexture)
+                renderTexture(textureID); // Render the texture
 
             // Reset color to default (white) before rendering the texture
             // glColor3f(1.0f, 1.0f, 1.0f);
-            renderRectangle();
+//            renderRectangle();
 
-            // button1.render(); // Render button 1
+             button1.render(); // Render button 1
             // button2.render(); // Render button 2
             // button3.render(); // Render button 3
 
@@ -164,7 +175,21 @@ LRESULT CALLBACK WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam) 
                 PostQuitMessage(0);
             }
             break;
+        case WM_LBUTTONDOWN:
+        {
+//            std::cout << "LMB pressed at " + GET_X_LPARAM(lParam), GET_Y_LPARAM(lParam) + '\n';
+//            std::cout << "Is clicked the button? ";
+            if (button1.isClicked(
+                    (float)GET_X_LPARAM(lParam), (float)GET_Y_LPARAM(lParam)
+            )) {
+//                std::cout << "YES\n";
+                isRenderTexture = !isRenderTexture;
+            }/* else {
+                std::cout << "NO\n";
+            }*/
 
+            break;
+        }
         default:
             // std::cout << "Key pressed: " + wParam + '\n';
             return DefWindowProc(hwnd, uMsg, wParam, lParam);
@@ -196,6 +221,14 @@ void EnableOpenGL(HWND hwnd, HDC *hDC, HGLRC *hRC) {
     RECT rect;
     GetClientRect(hwnd, &rect);
     glViewport(0, 0, rect.right - rect.left, rect.bottom - rect.top); // Adjust viewport size
+
+// Make coordinates start at the top left corner
+    glMatrixMode(GL_PROJECTION);
+    glLoadIdentity();
+    glOrtho(0, rect.right - rect.left, rect.bottom - rect.top, 0, -1, 1); // Set orthographic projection
+    glMatrixMode(GL_MODELVIEW);
+    glLoadIdentity();
+//
     std::cout << "Viewport size: " << (rect.right - rect.left) << "x" << (rect.bottom - rect.top) << std::endl;
 }
 
@@ -258,7 +291,7 @@ void renderTexture(GLuint textureID) {
     GLint boundTexture;
     glGetIntegerv(GL_TEXTURE_BINDING_2D, &boundTexture);
     if (boundTexture == textureID) {
-        std::cout << "Texture bound successfully: " << textureID << std::endl;
+//        std::cout << "Texture bound successfully: " << textureID << std::endl;
     } else {
         std::cerr << "Failed to bind texture: " << textureID << std::endl;
     }
@@ -267,15 +300,16 @@ void renderTexture(GLuint textureID) {
     glBegin(GL_QUADS);
 
         glTexCoord2f(0.0f, 0.0f);
-        glVertex2f(-1.0f, -1.0f);
+        glVertex2f(0.0f, 0.0f);  // Top-left corner
         glTexCoord2f(1.0f, 0.0f);
-        glVertex2f(1.0f, -1.0f);
+        glVertex2f(imageWidth, 0.0f);  // Top-right corner
         glTexCoord2f(1.0f, 1.0f);
-        glVertex2f(1.0f, 1.0f);
+        glVertex2f(imageWidth, imageHeight);  // Bottom-right corner
         glTexCoord2f(0.0f, 1.0f);
-        glVertex2f(-1.0f, 1.0f);
+        glVertex2f(0.0f, imageHeight);  // Bottom-left corner
 
     glEnd();
+
 
 
     glDisable(GL_TEXTURE_2D);

@@ -1,4 +1,4 @@
-set(CMAKE_C_COMPILER "C:/Users/alex0/AppData/Local/Programs/CLion Nova/bin/mingw/bin/gcc.exe")
+set(CMAKE_C_COMPILER "D:/Program Files/JetBrains/CLion 2022.2.3/bin/mingw/bin/gcc.exe")
 set(CMAKE_C_COMPILER_ARG1 "")
 set(CMAKE_C_COMPILER_ID "GNU")
 set(CMAKE_C_COMPILER_VERSION "13.1.0")
@@ -21,11 +21,11 @@ set(CMAKE_C_SIMULATE_VERSION "")
 
 
 
-set(CMAKE_AR "C:/Users/alex0/AppData/Local/Programs/CLion Nova/bin/mingw/bin/ar.exe")
-set(CMAKE_C_COMPILER_AR "C:/Users/alex0/AppData/Local/Programs/CLion Nova/bin/mingw/bin/gcc-ar.exe")
-set(CMAKE_RANLIB "C:/Users/alex0/AppData/Local/Programs/CLion Nova/bin/mingw/bin/ranlib.exe")
-set(CMAKE_C_COMPILER_RANLIB "C:/Users/alex0/AppData/Local/Programs/CLion Nova/bin/mingw/bin/gcc-ranlib.exe")
-set(CMAKE_LINKER "C:/Users/alex0/AppData/Local/Programs/CLion Nova/bin/mingw/bin/ld.exe")
+set(CMAKE_AR "D:/Program Files/JetBrains/CLion 2022.2.3/bin/mingw/bin/ar.exe")
+set(CMAKE_C_COMPILER_AR "D:/Program Files/JetBrains/CLion 2022.2.3/bin/mingw/bin/gcc-ar.exe")
+set(CMAKE_RANLIB "D:/Program Files/JetBrains/CLion 2022.2.3/bin/mingw/bin/ranlib.exe")
+set(CMAKE_C_COMPILER_RANLIB "D:/Program Files/JetBrains/CLion 2022.2.3/bin/mingw/bin/gcc-ranlib.exe")
+set(CMAKE_LINKER "D:/Program Files/JetBrains/CLion 2022.2.3/bin/mingw/bin/ld.exe")
 set(CMAKE_MT "")
 set(CMAKE_TAPI "CMAKE_TAPI-NOTFOUND")
 set(CMAKE_COMPILER_IS_GNUCC 1)
@@ -68,7 +68,7 @@ endif()
 
 
 
-set(CMAKE_C_IMPLICIT_INCLUDE_DIRECTORIES "C:/Users/alex0/AppData/Local/Programs/CLion Nova/bin/mingw/lib/gcc/x86_64-w64-mingw32/13.1.0/include;C:/Users/alex0/AppData/Local/Programs/CLion Nova/bin/mingw/include;C:/Users/alex0/AppData/Local/Programs/CLion Nova/bin/mingw/lib/gcc/x86_64-w64-mingw32/13.1.0/include-fixed;C:/Users/alex0/AppData/Local/Programs/CLion Nova/bin/mingw/x86_64-w64-mingw32/include")
+set(CMAKE_C_IMPLICIT_INCLUDE_DIRECTORIES "D:/Program Files/JetBrains/CLion 2022.2.3/bin/mingw/lib/gcc/x86_64-w64-mingw32/13.1.0/include;D:/Program Files/JetBrains/CLion 2022.2.3/bin/mingw/include;D:/Program Files/JetBrains/CLion 2022.2.3/bin/mingw/lib/gcc/x86_64-w64-mingw32/13.1.0/include-fixed;D:/Program Files/JetBrains/CLion 2022.2.3/bin/mingw/x86_64-w64-mingw32/include")
 set(CMAKE_C_IMPLICIT_LINK_LIBRARIES "")
 set(CMAKE_C_IMPLICIT_LINK_DIRECTORIES "")
 set(CMAKE_C_IMPLICIT_LINK_FRAMEWORK_DIRECTORIES "")
