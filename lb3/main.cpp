@@ -5,11 +5,26 @@
 #include <windowsx.h>
 #include <vector>
 
+#include "Button.h"
+
 #define STB_IMAGE_IMPLEMENTATION
 #include "lib/stb-master/stb_image.h"
 
 #define STB_IMAGE_WRITE_IMPLEMENTATION
 #include "lib/stb-master/stb_image_write.h"
+
+// #define STB_TRUETYPE_IMPLEMENTATION
+// #include "lib/stb-master/stb_truetype.h"
+
+#define STB_EASY_FONT_IMPLEMENTATION
+#include "lib/stb-master/stb_easy_font.h"
+
+#ifndef GL_CLAMP_TO_EDGE
+#define GL_CLAMP_TO_EDGE 0x812F
+#endif
+
+
+// #include "text_renderer.h"
 
 HWND hwnd;
 LRESULT CALLBACK WindowProc(HWND, UINT, WPARAM, LPARAM);
@@ -17,16 +32,27 @@ LRESULT CALLBACK WindowProc(HWND, UINT, WPARAM, LPARAM);
 void EnableOpenGL(HWND hwnd, HDC *, HGLRC *);
 void DisableOpenGL(HWND hwnd, HDC hDC, HGLRC hRC);
 GLuint loadTexture(const char *filename, int *width, int *height);
+// GLuint loadFontTexture(const char* fontPath, float fontSize, int textureWidth, int textureHeight);
+
+// void renderPauseMenu();
 
 int imageWidth, imageHeight;
-GLuint textureID;
 
 void renderTexture(GLuint textureID, int spriteRowIndex);
 bool isRenderTexture = false;
 
+// Pause state variable
+bool isPaused = false;
+
+// GLuint fontTextureID;
+
 class Character {
 public:
+    // Dimensions
     float x, y; // Position of the character
+    float scale; // Scale of the character
+
+    // Inertia
     float velocityX, velocityY; // Velocity of the character
     float acceleration = 500.f; // Acceleration due to key presses
     float damping = 0.98f; // Damping factor for inertia
@@ -42,10 +68,20 @@ public:
     float idleRareTimer = 0.0f; // Timer for rare idle animation
     float idleRareDuration = 15.0f; // Duration in seconds before rare idle animation triggers
 
+    // Textures
+    int texWidth;
+    int texHeight;
+    GLuint characterTextureID;
 
-    Character(float _x, float _y) : x(_x), y(_y), velocityX(0.0f), velocityY(0.0f) {}
+    Character(float _x, float _y, float _scale, GLuint _textureID)
+        : x(_x), y(_y), velocityX(0.0f), velocityY(0.0f), scale(_scale), characterTextureID(_textureID) {}
+
+    void setTextureID(GLuint _textureID) {
+        characterTextureID = _textureID;
+    }
 
     void update(float deltaTime) {
+        if (isPaused) return;
         /*if (abs(velocityX) > 5 || abs(velocityY) > 5) {
             currentAnimation = 2;
         } else {
@@ -81,6 +117,60 @@ public:
         updatePosition(deltaTime);
     }
 
+    void render() {
+        // Calculate sprite row based on current animation
+        int spriteRowIndex;
+        if (currentAnimation == 1) {
+            spriteRowIndex = 1; // Walking animation
+        } else if (currentAnimation == 2) {
+            spriteRowIndex = 2; // Idle animation
+        } else {
+            spriteRowIndex = 3; // Idle rare animation
+        }
+
+        // Render the character sprite
+        glEnable(GL_TEXTURE_2D);
+        glEnable(GL_BLEND);
+        glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+        glBindTexture(GL_TEXTURE_2D, characterTextureID);
+        glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_REPLACE);
+
+        // Calculate sprite row height and column width
+        float spriteRowHeight = 1.0f / spriteRowCount;
+        float spriteColumnWidth = 1.0f / spriteColumnCount;
+
+        // Calculate top, bottom, left, and right texture coordinates for the selected sprite
+        float top = 1.0f - spriteRowHeight * spriteRowIndex;
+        float bottom = top - spriteRowHeight;
+        float left = spriteColumnWidth * currentFrameIndex;
+        float right = left + spriteColumnWidth;
+
+        // Apply scale to character dimensions
+        float charWidth = texWidth / spriteColumnCount * scale;
+        float charHeight = texHeight / spriteRowCount * scale;
+
+        // Apply texture according to character size
+        glBegin(GL_QUADS);
+        glTexCoord2f(left, bottom);
+        glVertex2f(x, y);
+        glTexCoord2f(right, bottom);
+        glVertex2f(x + charWidth, y);
+        glTexCoord2f(right, top);
+        glVertex2f(x + charWidth, y + charHeight);
+        glTexCoord2f(left, top);
+        glVertex2f(x, y + charHeight);
+        glEnd();
+
+        glDisable(GL_BLEND);
+        glDisable(GL_TEXTURE_2D);
+
+        GLenum error = glGetError();
+        if (error != GL_NO_ERROR) {
+            std::cerr << "OpenGL error: " << gluErrorString(error) << std::endl;
+        }
+    }
+
+protected:
     // Update character's position based on keyboard input and inertia
     void updatePosition(double elapsedTime) {
         if (GetKeyState(VK_LEFT) & 0x8000) {
@@ -120,24 +210,8 @@ public:
             currentFrameIndex = (currentFrameIndex + 1) % spriteColumnCount;
         }
     }
-
-    void render() {
-        // Calculate sprite row based on current animation
-        int spriteRowIndex;
-        if (currentAnimation == 1) {
-            spriteRowIndex = 1; // Walking animation
-        } else if (currentAnimation == 2) {
-            spriteRowIndex = 2; // Idle animation
-        } else {
-            spriteRowIndex = 3; // Idle rare animation
-        }
-
-        // Render the character sprite
-        renderTexture(textureID, spriteRowIndex);
-    }
 };
 
-Character character(400.0f, 300.0f); // Create character at initial position
 
 int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int nCmdShow) {
     WNDCLASSEX wcex;
@@ -159,6 +233,8 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
     wcex.lpszClassName = "GLSample";
     wcex.hIconSm = LoadIcon(NULL, IDI_APPLICATION);
 
+    // loadFont("Roboto-Regular.ttf", 24);
+
     if (!RegisterClassEx(&wcex))
         return 0;
 
@@ -168,16 +244,18 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 
     EnableOpenGL(hwnd, &hDC, &hRC);
 
-    textureID = loadTexture("spritelist.png", &imageWidth, &imageHeight);
+    // textureID = loadTexture("spritelist.png", &imageWidth, &imageHeight);
+    // character.setTextureID(loadTexture("spritelist.png", &imageWidth, &imageHeight));
+    Character character(400.0f, 300.0f, 0.2f, loadTexture("spritelist.png", &character.texWidth, &character.texHeight));
+    Button button1(100.0f, 0.0f, 100.0f, 50.0f, loadTexture("grunge-texture-png-03-1536x1024.png", &button1.texWidth, &button1.texHeight)); // Button 1
+    Button button2(210.0f, 0.0f, 100.0f, 50.0f, loadTexture("grunge-texture-png-03-1536x1024.png", &button2.texWidth, &button2.texHeight)); // Button 2
+    Button button3(320.0f, 0.0f, 100.0f, 50.0f, loadTexture("grunge-texture-png-03-1536x1024.png", &button3.texWidth, &button3.texHeight)); // Button 3
 
-    if (textureID == 0) {
-        std::cerr << "Failed to load texture" << std::endl;
-        return 1; // Exit with error code
-    }
+    // fontTextureID = loadFontTexture('Roboto-Regular.ttf', 24, 512, 512);
 
     // Variables for timing
     DWORD prevTime = timeGetTime();
-    const float targetFrameTime = 1.0f / 60.0f; // Target frame time for 60 FPS
+    // const float targetFrameTime = 1.0f / 60.0f; // Target frame time for 60 FPS, no need in it for now
 
     while (!bQuit) {
         // Calculate delta time
@@ -210,11 +288,26 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
             glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
             glDisable(GL_DEPTH_TEST);
 
-            if (isRenderTexture)
-                renderTexture(textureID, 1);
+            // if (isRenderTexture)
+            //     renderTexture(textureID, 1);
 
             character.render();
+            button1.render();
+            button2.render();
+            button3.render();
 
+            if (GetKeyState('P') & 0x8000) {
+                isPaused = !isPaused; // Toggle pause state
+            }
+
+            // Render pause menu if game is paused
+            if (isPaused) {
+                // TODO: Make a pause menu, at least with the buttons
+            }
+
+
+
+            // Always at the end
             SwapBuffers(hDC);
         }
     }
@@ -224,6 +317,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 
     return msg.wParam;
 }
+
 
 LRESULT CALLBACK WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam) {
     switch (uMsg) {
@@ -238,6 +332,11 @@ LRESULT CALLBACK WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam) 
             if (wParam == VK_ESCAPE) {
                 PostQuitMessage(0);
             }
+
+            // if (wParam == VK_F9) {
+            //     isPaused = !isPaused;
+            // }
+
             break;
 
         case WM_LBUTTONDOWN:
@@ -251,6 +350,7 @@ LRESULT CALLBACK WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam) 
     }
     return 0;
 }
+
 
 void EnableOpenGL(HWND hwnd, HDC *hDC, HGLRC *hRC) {
     PIXELFORMATDESCRIPTOR pfd;
@@ -295,9 +395,9 @@ void DisableOpenGL(HWND hwnd, HDC hDC, HGLRC hRC) {
 
 
 GLuint loadTexture(const char *filename, int *width, int *height) {
-    GLuint textureID;
-    glGenTextures(1, &textureID);
-    glBindTexture(GL_TEXTURE_2D, textureID);
+    GLuint _textureID;
+    glGenTextures(1, &_textureID);
+    glBindTexture(GL_TEXTURE_2D, _textureID);
 
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
@@ -323,70 +423,116 @@ GLuint loadTexture(const char *filename, int *width, int *height) {
             glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, *width, *height, 0, GL_RGBA, GL_UNSIGNED_BYTE, data);
         }
 
+        if (_textureID == 0) {
+            std::cerr << "Failed to load texture (textureID is 0): " << filename << std::endl;
+            return 1; // Exit with error code
+        }
+
         std::cout << "Texture loaded successfully: " << filename << std::endl;
+        std::cout << "Texture ID: " << _textureID << std::endl;
         std::cout << "Texture width: " << *width << ", height: " << *height << std::endl;
         std::cout << "Texture format: " << (nrChannels == 3 ? "RGB" : "RGBA") << std::endl;
 
-        std::string outputFilename = "test.png";
-        stbi_write_png(outputFilename.c_str(), *width, *height, nrChannels, data, 0);
-
         stbi_image_free(data);
-        return textureID;
-    } else {
-        std::cerr << "Failed to load texture: " << filename << std::endl;
-        return 0;
+        return _textureID;
     }
+
+    // If no data on load
+    std::cerr << "Failed to load texture: " << filename << std::endl;
+    return 0;
 }
 
-void renderTexture(GLuint textureID, int spriteRowIndex) {
+
+/*void renderText(const char* text, float x, float y, float scale) {
+    glMatrixMode(GL_PROJECTION);
+    glPushMatrix();
+    glLoadIdentity();
+    gluOrtho2D(0, 800, 0, 600); // Adjust if your window size is different
+    glMatrixMode(GL_MODELVIEW);
+    glPushMatrix();
+    glLoadIdentity();
+    glTranslatef(x, y, 0.0f);
+    glScalef(scale, scale, 1.0f);
+
     glEnable(GL_TEXTURE_2D);
-    glEnable(GL_BLEND);
-    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-    glBindTexture(GL_TEXTURE_2D, textureID);
-    glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_REPLACE);
-
-    // Calculate texture aspect ratio and screen aspect ratio
-    float textureAspect = (float)imageWidth / (float)imageHeight;
-    RECT rect;
-    GetClientRect(hwnd, &rect);
-    float screenAspect = (float)(rect.right - rect.left) / (float)(rect.bottom - rect.top);
-
-    // Calculate texture width and height to maintain aspect ratio
-    float texWidth, texHeight;
-    if (textureAspect > screenAspect) {
-        texWidth = (rect.right - rect.left);
-        texHeight = texWidth / textureAspect;
-    } else {
-        texHeight = (rect.bottom - rect.top);
-        texWidth = texHeight * textureAspect;
-    }
-
-    // Calculate sprite row height and column width
-    float spriteRowHeight = 1.0f / character.spriteRowCount;
-    float spriteColumnWidth = 1.0f / character.spriteColumnCount;
-
-    // Calculate top, bottom, left, and right texture coordinates for the selected sprite
-    float top = 1.0f - spriteRowHeight * spriteRowIndex;
-    float bottom = top - spriteRowHeight;
-    float left = spriteColumnWidth * character.currentFrameIndex;
-    float right = left + spriteColumnWidth;
+    glBindTexture(GL_TEXTURE_2D, fontTextureID); // Replace with your font texture ID
 
     glBegin(GL_QUADS);
-    glTexCoord2f(left, bottom);
-    glVertex2f(character.x, character.y);
-    glTexCoord2f(right, bottom);
-    glVertex2f(character.x + texWidth / character.spriteColumnCount, character.y);
-    glTexCoord2f(right, top);
-    glVertex2f(character.x + texWidth / character.spriteColumnCount, character.y + texHeight * spriteRowHeight);
-    glTexCoord2f(left, top);
-    glVertex2f(character.x, character.y + texHeight * spriteRowHeight);
+    float offset = 0.0f;
+    for (const char* c = text; *c != '\0'; ++c) {
+        float cx = (*c % 16) / 16.0f;
+        float cy = 1.0f - ((*c / 16) / 16.0f);
+
+        glTexCoord2f(cx, cy);
+        glVertex2f(offset, 0.0f);
+
+        glTexCoord2f(cx + 1.0f / 16.0f, cy);
+        glVertex2f(offset + 1.0f, 0.0f);
+
+        glTexCoord2f(cx + 1.0f / 16.0f, cy - 1.0f / 16.0f);
+        glVertex2f(offset + 1.0f, 1.0f);
+
+        glTexCoord2f(cx, cy - 1.0f / 16.0f);
+        glVertex2f(offset, 1.0f);
+
+        offset += 1.0f;
+    }
     glEnd();
 
-    glDisable(GL_BLEND);
     glDisable(GL_TEXTURE_2D);
 
-    GLenum error = glGetError();
-    if (error != GL_NO_ERROR) {
-        std::cerr << "OpenGL error: " << gluErrorString(error) << std::endl;
-    }
+    glPopMatrix();
+    glMatrixMode(GL_PROJECTION);
+    glPopMatrix();
+    glMatrixMode(GL_MODELVIEW);
 }
+
+void renderPauseMenu() {
+    renderText("PAUSED", 300.0f, 300.0f, 1.0f); // Render the pause text at desired position
+}
+
+GLuint loadFontTexture(const char* fontPath, float fontSize, int textureWidth, int textureHeight) {
+    unsigned char* ttf_buffer = nullptr;
+    FILE* file = fopen(fontPath, "rb");
+    if (!file) {
+        std::cerr << "Failed to open font file: " << fontPath << std::endl;
+        return 0;
+    }
+    fseek(file, 0, SEEK_END);
+    long size = ftell(file);
+    fseek(file, 0, SEEK_SET);
+    ttf_buffer = (unsigned char*)malloc(size);
+    fread(ttf_buffer, 1, size, file);
+    fclose(file);
+
+    unsigned char* temp_bitmap = (unsigned char*)malloc(textureWidth * textureHeight);
+    if (!temp_bitmap) {
+        std::cerr << "Failed to allocate memory for font texture" << std::endl;
+        free(ttf_buffer);
+        return 0;
+    }
+
+    stbtt_bakedchar* cdata = (stbtt_bakedchar*)malloc(sizeof(stbtt_bakedchar) * 128);
+
+    // Generate font texture
+    stbtt_BakeFontBitmap(ttf_buffer, 0, fontSize, temp_bitmap, textureWidth, textureHeight, 32, 128, cdata);
+
+    // Upload font texture to OpenGL
+    GLuint fontTextureID;
+    glGenTextures(1, &fontTextureID);
+    glBindTexture(GL_TEXTURE_2D, fontTextureID);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_ALPHA, textureWidth, textureHeight, 0, GL_ALPHA, GL_UNSIGNED_BYTE, temp_bitmap);
+
+    // Set texture parameters
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+
+    // Cleanup
+    free(ttf_buffer);
+    free(temp_bitmap);
+    free(cdata);
+
+    return fontTextureID;
+}*/
