@@ -12,7 +12,7 @@
 
 # =============================================================================
 # Project: lb3
-# Configurations: Debug
+# Configurations: Release
 # =============================================================================
 
 #############################################
@@ -24,7 +24,7 @@ ninja_required_version = 1.5
 #############################################
 # Set configuration variable for custom commands.
 
-CONFIGURATION = Debug
+CONFIGURATION = Release
 # =============================================================================
 # Include auxiliary files.
 
@@ -39,7 +39,7 @@ include CMakeFiles/rules.ninja
 #############################################
 # Logical path to working directory; prefix for absolute paths.
 
-cmake_ninja_workdir = O$:/computer-graphic/lb3/cmake-build-debug/
+cmake_ninja_workdir = O$:/computer-graphic/lb3/cmake-build-release/
 # =============================================================================
 # Object build statements for EXECUTABLE target lb3
 
@@ -49,9 +49,9 @@ cmake_ninja_workdir = O$:/computer-graphic/lb3/cmake-build-debug/
 
 build cmake_object_order_depends_target_lb3: phony || CMakeFiles/lb3.dir
 
-build CMakeFiles/lb3.dir/main.cpp.obj: CXX_COMPILER__lb3_unscanned_Debug O$:/computer-graphic/lb3/main.cpp || cmake_object_order_depends_target_lb3
+build CMakeFiles/lb3.dir/main.cpp.obj: CXX_COMPILER__lb3_unscanned_Release O$:/computer-graphic/lb3/main.cpp || cmake_object_order_depends_target_lb3
   DEP_FILE = CMakeFiles\lb3.dir\main.cpp.obj.d
-  FLAGS = -static-libstdc++ -static-libgcc -g -std=gnu++20 -fdiagnostics-color=always
+  FLAGS = -static-libstdc++ -static-libgcc -O3 -DNDEBUG -std=gnu++20 -fdiagnostics-color=always
   OBJECT_DIR = CMakeFiles\lb3.dir
   OBJECT_FILE_DIR = CMakeFiles\lb3.dir
 
@@ -63,11 +63,11 @@ build CMakeFiles/lb3.dir/main.cpp.obj: CXX_COMPILER__lb3_unscanned_Debug O$:/com
 #############################################
 # Link the executable lb3.exe
 
-build lb3.exe: CXX_EXECUTABLE_LINKER__lb3_Debug CMakeFiles/lb3.dir/main.cpp.obj
-  FLAGS = -static-libstdc++ -static-libgcc -g
+build lb3.exe: CXX_EXECUTABLE_LINKER__lb3_Release CMakeFiles/lb3.dir/main.cpp.obj
+  FLAGS = -static-libstdc++ -static-libgcc -O3 -DNDEBUG
   LINK_LIBRARIES = -lopengl32  -lglu32  -lwinmm  -lkernel32 -luser32 -lgdi32 -lwinspool -lshell32 -lole32 -loleaut32 -luuid -lcomdlg32 -ladvapi32
   OBJECT_DIR = CMakeFiles\lb3.dir
-  POST_BUILD = C:\Windows\system32\cmd.exe /C "cd /D O:\computer-graphic\lb3\cmake-build-debug && "C:\Users\alex0\AppData\Local\Programs\CLion Nova\bin\cmake\win\x64\bin\cmake.exe" -E copy_if_different "O:\Program Files\CodeBlocks\libwinpthread-1.dll" O:/computer-graphic/lb3/cmake-build-debug"
+  POST_BUILD = C:\Windows\system32\cmd.exe /C "cd /D O:\computer-graphic\lb3\cmake-build-release && "C:\Users\alex0\AppData\Local\Programs\CLion Nova\bin\cmake\win\x64\bin\cmake.exe" -E copy_if_different "O:\Program Files\CodeBlocks\libwinpthread-1.dll" O:/computer-graphic/lb3/cmake-build-release"
   PRE_LINK = cd .
   TARGET_FILE = lb3.exe
   TARGET_IMPLIB = liblb3.dll.a
@@ -78,7 +78,7 @@ build lb3.exe: CXX_EXECUTABLE_LINKER__lb3_Debug CMakeFiles/lb3.dir/main.cpp.obj
 # Utility command for edit_cache
 
 build CMakeFiles/edit_cache.util: CUSTOM_COMMAND
-  COMMAND = C:\Windows\system32\cmd.exe /C "cd /D O:\computer-graphic\lb3\cmake-build-debug && "C:\Users\alex0\AppData\Local\Programs\CLion Nova\bin\cmake\win\x64\bin\cmake.exe" -E echo "No interactive CMake dialog available.""
+  COMMAND = C:\Windows\system32\cmd.exe /C "cd /D O:\computer-graphic\lb3\cmake-build-release && "C:\Users\alex0\AppData\Local\Programs\CLion Nova\bin\cmake\win\x64\bin\cmake.exe" -E echo "No interactive CMake dialog available.""
   DESC = No interactive CMake dialog available...
   restat = 1
 
@@ -89,7 +89,7 @@ build edit_cache: phony CMakeFiles/edit_cache.util
 # Utility command for rebuild_cache
 
 build CMakeFiles/rebuild_cache.util: CUSTOM_COMMAND
-  COMMAND = C:\Windows\system32\cmd.exe /C "cd /D O:\computer-graphic\lb3\cmake-build-debug && "C:\Users\alex0\AppData\Local\Programs\CLion Nova\bin\cmake\win\x64\bin\cmake.exe" --regenerate-during-build -SO:\computer-graphic\lb3 -BO:\computer-graphic\lb3\cmake-build-debug"
+  COMMAND = C:\Windows\system32\cmd.exe /C "cd /D O:\computer-graphic\lb3\cmake-build-release && "C:\Users\alex0\AppData\Local\Programs\CLion Nova\bin\cmake\win\x64\bin\cmake.exe" --regenerate-during-build -SO:\computer-graphic\lb3 -BO:\computer-graphic\lb3\cmake-build-release"
   DESC = Running CMake to regenerate build system...
   pool = console
   restat = 1
@@ -107,7 +107,7 @@ build lb3: phony lb3.exe
 # =============================================================================
 
 #############################################
-# Folder: O:/computer-graphic/lb3/cmake-build-debug
+# Folder: O:/computer-graphic/lb3/cmake-build-release
 
 build all: phony lb3.exe
 

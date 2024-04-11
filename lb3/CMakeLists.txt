@@ -2,6 +2,30 @@ cmake_minimum_required(VERSION 3.27.8)
 project(lb3)
 
 set(CMAKE_CXX_STANDARD 20)
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -static-libstdc++ -static-libgcc")
+
+find_package(OpenGL REQUIRED)
+
+add_executable(lb3 main.cpp Button.h)
+
+include_directories(${OPENGL_INCLUDE_DIRS})
+target_link_libraries(lb3 ${OPENGL_LIBRARIES} winmm)
+
+# Copy DLLs to the output directory
+add_custom_command(TARGET lb3 POST_BUILD
+        COMMAND ${CMAKE_COMMAND} -E copy_if_different
+        "O:\\Program Files\\CodeBlocks\\libwinpthread-1.dll"
+        $<TARGET_FILE_DIR:lb3>
+)
+
+
+#[[
+cmake_minimum_required(VERSION 3.27.8)
+project(lb3)
+
+set(CMAKE_CXX_STANDARD 20)
+set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -static-libstdc++ -static-libgcc")
+
 #set(CMAKE_LIBRARY_PATH lib/)
 #
 #find_package(GLEW REQUIRED PATHS )
@@ -22,10 +46,10 @@ add_executable(lb3 main.cpp
 #        Button.cpp
         Button.h
         #        "backup 6.cpp"
-        #[["draw rect.cpp"]]
-        #[[main_cb.cpp]])
+        #[=["draw rect.cpp"]=]
+        #[=[main_cb.cpp]=])
 
 # Link against GLFW
 #target_link_libraries(lb2 glfw3)
 include_directories( ${OPENGL_INCLUDE_DIRS} )
-target_link_libraries(lb3 ${OPENGL_LIBRARIES} winmm)
+target_link_libraries(lb3 ${OPENGL_LIBRARIES} winmm -lpthread)]]
