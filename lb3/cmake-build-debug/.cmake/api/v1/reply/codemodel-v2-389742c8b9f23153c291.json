@@ -6,7 +6,7 @@
 			[
 				{
 					"build" : ".",
-					"jsonFile" : "directory-.-Release-d0094a50bb2071803777.json",
+					"jsonFile" : "directory-.-Debug-d0094a50bb2071803777.json",
 					"minimumCMakeVersion" : 
 					{
 						"string" : "3.27.8"
@@ -19,7 +19,7 @@
 					]
 				}
 			],
-			"name" : "Release",
+			"name" : "Debug",
 			"projects" : 
 			[
 				{
@@ -39,7 +39,7 @@
 				{
 					"directoryIndex" : 0,
 					"id" : "lb3::@6890427a1f51a3e7e1df",
-					"jsonFile" : "target-lb3-Release-daa833a0bd857bffc07a.json",
+					"jsonFile" : "target-lb3-Debug-df854775b289f55d19de.json",
 					"name" : "lb3",
 					"projectIndex" : 0
 				}
@@ -49,7 +49,7 @@
 	"kind" : "codemodel",
 	"paths" : 
 	{
-		"build" : "O:/computer-graphic/lb3/cmake-build-release",
+		"build" : "O:/computer-graphic/lb3/cmake-build-debug",
 		"source" : "O:/computer-graphic/lb3"
 	},
 	"version" : 

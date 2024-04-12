@@ -6,7 +6,8 @@ set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -static-libstdc++ -static-libgcc")
 
 find_package(OpenGL REQUIRED)
 
-add_executable(lb3 main.cpp Button.h)
+add_executable(lb3 main.cpp Button.h
+        Character.h)
 
 include_directories(${OPENGL_INCLUDE_DIRS})
 target_link_libraries(lb3 ${OPENGL_LIBRARIES} winmm)
