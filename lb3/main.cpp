@@ -18,6 +18,7 @@
 
 #define STB_EASY_FONT_IMPLEMENTATION
 #include <chrono>
+#include <fstream>
 
 #include "Character.h"
 #include "lib/stb-master/stb_easy_font.h"
@@ -35,9 +36,13 @@ LRESULT CALLBACK WindowProc(HWND, UINT, WPARAM, LPARAM);
 void EnableOpenGL(HWND hwnd, HDC *, HGLRC *);
 void DisableOpenGL(HWND hwnd, HDC hDC, HGLRC hRC);
 GLuint loadTexture(const char *filename, int *width, int *height);
+std::vector<std::string> loadLevel(const std::string& filename);
+void renderLevel(const std::vector<std::string>& levelData);
 // GLuint loadFontTexture(const char* fontPath, float fontSize, int textureWidth, int textureHeight);
 
 // void renderPauseMenu();
+
+float LEVEL_TILE_SIZE = 37.5f;
 
 int imageWidth, imageHeight;
 
@@ -104,6 +109,10 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
             PostQuitMessage(0);
         }); // Button 3
 
+
+    std::vector<std::string> levelData = loadLevel("level.txt");
+
+
     // fontTextureID = loadFontTexture('Roboto-Regular.ttf', 24, 512, 512);
 
     // Variables for timing
@@ -133,7 +142,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
             }
         } else {
             // Update game logic
-            character.update(deltaTime, isPaused);
+            character.update(deltaTime, isPaused, levelData, LEVEL_TILE_SIZE);
 
             // Render frame
             glClearColor(0.2f, 0.2f, 0.2f, 1.0f);
@@ -143,7 +152,9 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
             // if (isRenderTexture)
             //     renderTexture(textureID, 1);
 
+            renderLevel(levelData);
             character.render();
+
             button1.render();
             pause_button.render();
             exit_button.render();
@@ -309,6 +320,49 @@ GLuint loadTexture(const char *filename, int *width, int *height) {
     return 0;
 }
 
+// Function to load a level from a file
+std::vector<std::string> loadLevel(const std::string& filename) {
+    std::vector<std::string> levelData;
+
+    std::ifstream file(filename);
+    if (!file.is_open()) {
+        std::cerr << "Failed to open file: " << filename << std::endl;
+        return levelData;
+    }
+
+    std::string line;
+    while (std::getline(file, line)) {
+        levelData.push_back(line);
+    }
+
+    file.close();
+
+    return levelData;
+}
+
+void renderLevel(const std::vector<std::string>& levelData) {
+    const float LEVEL_TILE_SIZE = 37.5f; // Adjust this value as needed
+
+    // Set color for walls
+    glColor3f(0.5f, 0.5f, 0.5f); // Example color (gray)
+
+    // Iterate over the level data
+    for (size_t y = 0; y < levelData.size(); ++y) {
+        for (size_t x = 0; x < levelData[y].size(); ++x) {
+            if (levelData[y][x] == '#') {
+                // Render wall
+                glBegin(GL_QUADS);
+                glVertex2f(x * LEVEL_TILE_SIZE, y * LEVEL_TILE_SIZE);
+                glVertex2f((x + 1) * LEVEL_TILE_SIZE, y * LEVEL_TILE_SIZE);
+                glVertex2f((x + 1) * LEVEL_TILE_SIZE, (y + 1) * LEVEL_TILE_SIZE);
+                glVertex2f(x * LEVEL_TILE_SIZE, (y + 1) * LEVEL_TILE_SIZE);
+                glEnd();
+            }
+            // Add more conditions to render other elements of the level
+            // For example, you can use different characters to represent different elements
+        }
+    }
+}
 
 /*void renderText(const char* text, float x, float y, float scale) {
     glMatrixMode(GL_PROJECTION);

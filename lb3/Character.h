@@ -45,7 +45,7 @@ public:
         characterTextureID = _textureID;
     }
 
-    void update(float deltaTime, bool isPaused) {
+    void update(float deltaTime, bool isPaused, const std::vector<std::string>& levelData, float tileSize) {
         if (isPaused) return;
 
         // Check for rare idle animation
@@ -70,7 +70,16 @@ public:
             }
         }
 
+
         updateAnimation(deltaTime);
+
+        // Check for collision with walls
+        if (collidesWithWalls(levelData, tileSize)) {
+            // Handle collision with walls (e.g., stop character's movement)
+            velocityX = 0;
+            velocityY = 0;
+        }
+
         updatePosition(deltaTime);
     }
 
@@ -133,6 +142,40 @@ public:
         if (error != GL_NO_ERROR) {
             std::cerr << "OpenGL error: " << gluErrorString(error) << std::endl;
         }
+    }
+
+    bool collidesWithWalls(const std::vector<std::string>& levelData, float tileSize) const {
+        // Convert character position to tile coordinates
+        float characterWidth = texWidth / spriteColumnCount * scale;
+        float characterHeight = texHeight / spriteRowCount * scale;
+        // Calculate character's top-left and bottom-right corners
+        float characterLeft = x;
+        float characterRight = x + characterWidth;
+        float characterTop = y;
+        float characterBottom = y + characterHeight;
+
+        // Convert character corners to tile coordinates
+        int topLeftTileX = static_cast<int>(characterLeft / tileSize);
+        int topLeftTileY = static_cast<int>(characterTop / tileSize);
+        int bottomRightTileX = static_cast<int>(characterRight / tileSize);
+        int bottomRightTileY = static_cast<int>(characterBottom / tileSize);
+
+        // Check collision for all four corners of the character
+        for (int tileY = topLeftTileY; tileY <= bottomRightTileY; ++tileY) {
+            for (int tileX = topLeftTileX; tileX <= bottomRightTileX; ++tileX) {
+                // Check if tile is within the level bounds
+                if (tileX >= 0 && tileX < levelData[0].size() && tileY >= 0 && tileY < levelData.size()) {
+                    // Check if the tile is a wall
+                    if (levelData[tileY][tileX] == '#') {
+                        return true; // Collision detected
+                    }
+                } else {
+                    return true; // Collision with level boundary
+                }
+            }
+        }
+
+        return false; // No collision detected
     }
 
 
