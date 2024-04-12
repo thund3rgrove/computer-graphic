@@ -1,6 +1,7 @@
 #ifndef BUTTON_H
 #define BUTTON_H
 
+#include <functional>
 #include <iostream>
 #include <GL/gl.h>
 
@@ -18,8 +19,11 @@ public:
     GLuint fontTextureID; // Texture ID for font
     stbtt_bakedchar charData[96]; // ASCII 32..126 is 95 glyphs
 
-    Button(float _x, float _y, float _width, float _height, GLuint _textureID = NULL) : x(_x), y(_y), width(_width),
-        height(_height), textureID(_textureID) {
+    using ClickHandler = std::function<void()>;
+
+    Button() : x(0.0f), y(0.0f), width(0.0f), height(0.0f), textureID(0), texWidth(0), texHeight(0) {}
+    Button(float _x, float _y, float _width, float _height, GLuint _textureID = NULL, ClickHandler _onclick = nullptr) : x(_x), y(_y), width(_width),
+        height(_height), textureID(_textureID), onClickHandler(_onclick) {
     }
 
     bool isClicked(float clickX, float clickY) {
@@ -33,7 +37,11 @@ public:
     }
 
     void onClick() {
-        std::cout << "Button does not have onClick method set up\n";
+        if (onClickHandler) {
+            onClickHandler();
+        } else {
+            std::cout << "Button does not have onClick method set up\n";
+        }
     }
 
     void renderText(const char* text, float posX, float posY, float scale) {
@@ -153,6 +161,9 @@ public:
 
         return textureID;
     }
+
+private:
+    ClickHandler onClickHandler; // Function pointer or function object for onClick behavior
 };
 
 

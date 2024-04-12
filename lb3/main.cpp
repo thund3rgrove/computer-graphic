@@ -214,6 +214,9 @@ protected:
     }
 };
 
+Button button1;
+Button pause_button;
+Button exit_button;
 
 int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int nCmdShow) {
     WNDCLASSEX wcex;
@@ -240,7 +243,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
     if (!RegisterClassEx(&wcex))
         return 0;
 
-    hwnd = CreateWindowEx(0, "SimpleGame", "Simple Game", WS_OVERLAPPEDWINDOW, CW_USEDEFAULT, CW_USEDEFAULT, 800, 600,
+    hwnd = CreateWindowEx(0, "GLSample", "Simple Game", WS_OVERLAPPEDWINDOW, CW_USEDEFAULT, CW_USEDEFAULT, 800, 600,
                           NULL, NULL, hInstance, NULL);
     ShowWindow(hwnd, nCmdShow);
 
@@ -249,9 +252,19 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
     // textureID = loadTexture("spritelist.png", &imageWidth, &imageHeight);
     // character.setTextureID(loadTexture("spritelist.png", &imageWidth, &imageHeight));
     Character character(400.0f, 300.0f, 0.2f, loadTexture("spritelist.png", &character.texWidth, &character.texHeight));
-    Button button1(100.0f, 0.0f, 100.0f, 50.0f, loadTexture("grunge-texture-png-03-1536x1024.png", &button1.texWidth, &button1.texHeight)); // Button 1
-    Button button2(210.0f, 0.0f, 100.0f, 50.0f, loadTexture("grunge-texture-png-03-1536x1024.png", &button2.texWidth, &button2.texHeight)); // Button 2
-    Button button3(320.0f, 0.0f, 100.0f, 50.0f, loadTexture("grunge-texture-png-03-1536x1024.png", &button3.texWidth, &button3.texHeight)); // Button 3
+    button1 = Button(100.0f, 0.0f, 100.0f, 50.0f,
+        loadTexture("grunge-texture-png-03-1536x1024.png", &button1.texWidth, &button1.texHeight)); // Button 1
+    pause_button = Button(210.0f, 0.0f, 100.0f, 50.0f,
+        loadTexture("holographic-stream-package-o.png", &pause_button.texWidth, &pause_button.texHeight),
+        []() {
+            isPaused = !isPaused;
+        }); // Button 2
+
+    exit_button = Button(320.0f, 0.0f, 100.0f, 50.0f,
+        loadTexture("emergency-exit-sign-right-adobe.jpg", &exit_button.texWidth, &exit_button.texHeight),
+        []() {
+            PostQuitMessage(0);
+        }); // Button 3
 
     // fontTextureID = loadFontTexture('Roboto-Regular.ttf', 24, 512, 512);
 
@@ -294,8 +307,8 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 
             character.render();
             button1.render();
-            button2.render();
-            button3.render();
+            pause_button.render();
+            exit_button.render();
 
             if (GetKeyState('P') & 0x8000) {
                 isPaused = !isPaused; // Toggle pause state
@@ -341,9 +354,24 @@ LRESULT CALLBACK WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam) 
             break;
 
         case WM_LBUTTONDOWN:
-            if (HIWORD(lParam) < 50) {
-                isRenderTexture = !isRenderTexture;
+        {
+            int mouseX = LOWORD(lParam);
+            int mouseY = HIWORD(lParam);
+
+            // Check if the mouse click is within the boundaries of the button
+            if (mouseX >= exit_button.x && mouseX <= exit_button.x + exit_button.width &&
+                mouseY >= exit_button.y && mouseY <= exit_button.y + exit_button.height) {
+                // Perform action when the button is clicked
+                exit_button.onClick();
             }
+
+            // Check if the mouse click is within the boundaries of the button
+            if (mouseX >= pause_button.x && mouseX <= pause_button.x + pause_button.width &&
+                mouseY >= pause_button.y && mouseY <= pause_button.y + pause_button.height) {
+                // Perform action when the button is clicked
+                pause_button.onClick();
+            }
+        }
             break;
 
         default:
