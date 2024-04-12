@@ -17,6 +17,8 @@
 // #include "lib/stb-master/stb_truetype.h"
 
 #define STB_EASY_FONT_IMPLEMENTATION
+#include <chrono>
+
 #include "lib/stb-master/stb_easy_font.h"
 
 #ifndef GL_CLAMP_TO_EDGE
@@ -61,7 +63,8 @@ public:
     int spriteRowCount = 3;
     int spriteColumnCount = 5;
     int currentFrameIndex = 0;
-    float frameDuration = 0.1f; // Time in seconds for each frame
+    // Increase this value to slow down the animation
+    float frameDuration = 0.15f; // Time in seconds for each frame
     float frameTimer = 0.0f; // Timer to track frame duration
     int currentAnimation = 1; // 1: Idle, 2: Walking, 3: Idle rare
 
@@ -82,11 +85,6 @@ public:
 
     void update(float deltaTime) {
         if (isPaused) return;
-        /*if (abs(velocityX) > 5 || abs(velocityY) > 5) {
-            currentAnimation = 2;
-        } else {
-            currentAnimation = 1;
-        }*/
 
         // Check for rare idle animation
         if (currentAnimation != 3) { // If not already in rare idle animation
@@ -108,9 +106,6 @@ public:
                 currentAnimation = 2; // Switch to walking animation if moving
                 idleRareTimer = 0.0f; // Reset idle timer
             }
-            // else if (idleRareTimer >= idleRareDuration) {
-            //     currentAnimation = 1; // Switch to idle animation if timer expired
-            // }
         }
 
         updateAnimation(deltaTime);
@@ -142,8 +137,16 @@ public:
         // Calculate top, bottom, left, and right texture coordinates for the selected sprite
         float top = 1.0f - spriteRowHeight * spriteRowIndex;
         float bottom = top - spriteRowHeight;
-        float left = spriteColumnWidth * currentFrameIndex;
-        float right = left + spriteColumnWidth;
+
+        // Calculate texture coordinates based on direction
+        float left, right;
+        if (velocityX < 0) { // If moving left, flip horizontally
+            left = spriteColumnWidth * (currentFrameIndex + 1); // Reverse order
+            right = spriteColumnWidth * currentFrameIndex;
+        } else {
+            left = spriteColumnWidth * currentFrameIndex;
+            right = left + spriteColumnWidth;
+        }
 
         // Apply scale to character dimensions
         float charWidth = texWidth / spriteColumnCount * scale;
@@ -170,9 +173,10 @@ public:
         }
     }
 
+
 protected:
     // Update character's position based on keyboard input and inertia
-    void updatePosition(double elapsedTime) {
+    void updatePosition(float elapsedTime) {
         if (GetKeyState(VK_LEFT) & 0x8000) {
             velocityX -= acceleration * elapsedTime;
         }
@@ -193,8 +197,6 @@ protected:
         // Update character's position based on velocity
         x += velocityX * elapsedTime;
         y += velocityY * elapsedTime;
-
-        // std::cout << x << ' ' << y << '\n';
     }
 
     void updateAnimation(float deltaTime) {
@@ -254,21 +256,20 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
     // fontTextureID = loadFontTexture('Roboto-Regular.ttf', 24, 512, 512);
 
     // Variables for timing
-    DWORD prevTime = timeGetTime();
+    // DWORD prevTime = timeGetTime();
     // const float targetFrameTime = 1.0f / 60.0f; // Target frame time for 60 FPS, no need in it for now
+    auto startTime = std::chrono::high_resolution_clock::now(); // Get start time
 
     while (!bQuit) {
         // Calculate delta time
-        DWORD currentTime = timeGetTime();
-        float deltaTime = (currentTime - prevTime) / 1000.0f; // Convert milliseconds to seconds
-        prevTime = currentTime;
+        // DWORD currentTime = timeGetTime();
+        // float deltaTime = (currentTime - prevTime) / 1000.0f; // Convert milliseconds to seconds
+        // prevTime = currentTime;
 
         // Another way
-        /*
         auto currentTime = std::chrono::high_resolution_clock::now();
-        double deltaTime = std::chrono::duration<double>(currentTime - previousTime).count(); // Time since last frame
-        previousTime = currentTime;
-        */
+        float deltaTime = std::chrono::duration<float>(currentTime - startTime).count(); // Calculate delta time
+        startTime = currentTime; // Update start time
         //
 
 
