@@ -113,7 +113,7 @@ CMAKE_FIND_PACKAGE_REDIRECTS_DIR:STATIC=O:/computer-graphic/lb3/cmake-build-debu
 CMAKE_GNUtoMS:BOOL=OFF
 
 //Install path prefix, prepended onto install directories.
-CMAKE_INSTALL_PREFIX:PATH=C:/Program Files (x86)/lb2
+CMAKE_INSTALL_PREFIX:PATH=C:/Program Files (x86)/lb3
 
 //Path to a program.
 CMAKE_LINKER:FILEPATH=C:/Users/alex0/AppData/Local/Programs/CLion Nova/bin/mingw/bin/ld.exe
@@ -247,15 +247,6 @@ OPENGL_gl_LIBRARY:STRING=opengl32
 
 //GLU library for win32
 OPENGL_glu_LIBRARY:STRING=glu32
-
-//Value Computed by CMake
-lb2_BINARY_DIR:STATIC=O:/computer-graphic/lb3/cmake-build-debug
-
-//Value Computed by CMake
-lb2_IS_TOP_LEVEL:STATIC=ON
-
-//Value Computed by CMake
-lb2_SOURCE_DIR:STATIC=O:/computer-graphic/lb3
 
 //Value Computed by CMake
 lb3_BINARY_DIR:STATIC=O:/computer-graphic/lb3/cmake-build-debug

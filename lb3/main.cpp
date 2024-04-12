@@ -13,9 +13,6 @@
 #define STB_IMAGE_WRITE_IMPLEMENTATION
 #include "lib/stb-master/stb_image_write.h"
 
-// #define STB_TRUETYPE_IMPLEMENTATION
-// #include "lib/stb-master/stb_truetype.h"
-
 #define STB_EASY_FONT_IMPLEMENTATION
 #include <chrono>
 
@@ -240,7 +237,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
     if (!RegisterClassEx(&wcex))
         return 0;
 
-    hwnd = CreateWindowEx(0, "GLSample", "OpenGL Sample", WS_OVERLAPPEDWINDOW, CW_USEDEFAULT, CW_USEDEFAULT, 800, 600,
+    hwnd = CreateWindowEx(0, "SimpleGame", "SimpleGame", WS_OVERLAPPEDWINDOW, CW_USEDEFAULT, CW_USEDEFAULT, 1280, 720,
                           NULL, NULL, hInstance, NULL);
     ShowWindow(hwnd, nCmdShow);
 
