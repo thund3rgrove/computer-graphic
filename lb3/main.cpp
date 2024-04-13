@@ -155,9 +155,6 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
             glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
             glDisable(GL_DEPTH_TEST);
 
-            // if (isRenderTexture)
-            //     renderTexture(textureID, 1);
-
             renderLevel(levelData);
             character.render();
 
@@ -213,16 +210,11 @@ LRESULT CALLBACK WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam) 
             int mouseX = LOWORD(lParam);
             int mouseY = HIWORD(lParam);
 
-            // TODO: use isClicked
-            // Check if the mouse click is within the boundaries of the button
             if (exit_button.isClicked(mouseX, mouseY)) {
-                // Perform action when the button is clicked
                 exit_button.onClick();
             }
 
-            // Check if the mouse click is within the boundaries of the button
             if (pause_button.isClicked(mouseX, mouseY)) {
-                // Perform action when the button is clicked
                 pause_button.onClick();
             }
 
@@ -383,97 +375,3 @@ void renderLevel(const std::vector<std::string>& levelData) {
     glDisable(GL_BLEND);
     glDisable(GL_TEXTURE_2D);
 }
-
-/*void renderText(const char* text, float x, float y, float scale) {
-    glMatrixMode(GL_PROJECTION);
-    glPushMatrix();
-    glLoadIdentity();
-    gluOrtho2D(0, 800, 0, 600); // Adjust if your window size is different
-    glMatrixMode(GL_MODELVIEW);
-    glPushMatrix();
-    glLoadIdentity();
-    glTranslatef(x, y, 0.0f);
-    glScalef(scale, scale, 1.0f);
-
-    glEnable(GL_TEXTURE_2D);
-    glBindTexture(GL_TEXTURE_2D, fontTextureID); // Replace with your font texture ID
-
-    glBegin(GL_QUADS);
-    float offset = 0.0f;
-    for (const char* c = text; *c != '\0'; ++c) {
-        float cx = (*c % 16) / 16.0f;
-        float cy = 1.0f - ((*c / 16) / 16.0f);
-
-        glTexCoord2f(cx, cy);
-        glVertex2f(offset, 0.0f);
-
-        glTexCoord2f(cx + 1.0f / 16.0f, cy);
-        glVertex2f(offset + 1.0f, 0.0f);
-
-        glTexCoord2f(cx + 1.0f / 16.0f, cy - 1.0f / 16.0f);
-        glVertex2f(offset + 1.0f, 1.0f);
-
-        glTexCoord2f(cx, cy - 1.0f / 16.0f);
-        glVertex2f(offset, 1.0f);
-
-        offset += 1.0f;
-    }
-    glEnd();
-
-    glDisable(GL_TEXTURE_2D);
-
-    glPopMatrix();
-    glMatrixMode(GL_PROJECTION);
-    glPopMatrix();
-    glMatrixMode(GL_MODELVIEW);
-}
-
-void renderPauseMenu() {
-    renderText("PAUSED", 300.0f, 300.0f, 1.0f); // Render the pause text at desired position
-}
-
-GLuint loadFontTexture(const char* fontPath, float fontSize, int textureWidth, int textureHeight) {
-    unsigned char* ttf_buffer = nullptr;
-    FILE* file = fopen(fontPath, "rb");
-    if (!file) {
-        std::cerr << "Failed to open font file: " << fontPath << std::endl;
-        return 0;
-    }
-    fseek(file, 0, SEEK_END);
-    long size = ftell(file);
-    fseek(file, 0, SEEK_SET);
-    ttf_buffer = (unsigned char*)malloc(size);
-    fread(ttf_buffer, 1, size, file);
-    fclose(file);
-
-    unsigned char* temp_bitmap = (unsigned char*)malloc(textureWidth * textureHeight);
-    if (!temp_bitmap) {
-        std::cerr << "Failed to allocate memory for font texture" << std::endl;
-        free(ttf_buffer);
-        return 0;
-    }
-
-    stbtt_bakedchar* cdata = (stbtt_bakedchar*)malloc(sizeof(stbtt_bakedchar) * 128);
-
-    // Generate font texture
-    stbtt_BakeFontBitmap(ttf_buffer, 0, fontSize, temp_bitmap, textureWidth, textureHeight, 32, 128, cdata);
-
-    // Upload font texture to OpenGL
-    GLuint fontTextureID;
-    glGenTextures(1, &fontTextureID);
-    glBindTexture(GL_TEXTURE_2D, fontTextureID);
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_ALPHA, textureWidth, textureHeight, 0, GL_ALPHA, GL_UNSIGNED_BYTE, temp_bitmap);
-
-    // Set texture parameters
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-
-    // Cleanup
-    free(ttf_buffer);
-    free(temp_bitmap);
-    free(cdata);
-
-    return fontTextureID;
-}*/
