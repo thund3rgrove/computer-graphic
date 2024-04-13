@@ -53,8 +53,12 @@ bool isRenderTexture = false;
 bool isPaused = false;
 
 // GLuint fontTextureID;
+// TODO: move to the class
+GLuint woodTextureID;
+int woodTextureWidth;
+int woodTextureHeight;
 
-Button button1;
+Button show_pause_menu;
 Button pause_button;
 Button exit_button;
 
@@ -94,9 +98,6 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
     Character character(400.0f, 300.0f, 0.2f,
         loadTexture("spritelist.png", &character.texWidth, &character.texHeight));
 
-    button1 = Button(100.0f, 0.0f, 100.0f, 50.0f,
-        loadTexture("grunge-texture-png-03-1536x1024.png", &button1.texWidth, &button1.texHeight)); // Button 1
-
     pause_button = Button(210.0f, 0.0f, 100.0f, 50.0f,
         loadTexture("holographic-stream-package-o.png", &pause_button.texWidth, &pause_button.texHeight),
         []() {
@@ -109,7 +110,12 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
             PostQuitMessage(0);
         }); // Button 3
 
+    show_pause_menu = Button(100.0f, 0.0f, 100.0f, 50.0f,
+        // loadTexture("grunge-texture-png-03-1536x1024.png", &show_pause_menu.texWidth, &show_pause_menu.texHeight),
+        loadTexture("Lever (1).png", &show_pause_menu.texWidth, &show_pause_menu.texHeight),
+        nullptr, true);
 
+    woodTextureID = loadTexture("istockphoto-466135044-612x612.jpg", &woodTextureWidth, &woodTextureHeight);
     std::vector<std::string> levelData = loadLevel("level.txt");
 
 
@@ -155,7 +161,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
             renderLevel(levelData);
             character.render();
 
-            button1.render();
+            show_pause_menu.render();
             pause_button.render();
             exit_button.render();
 
@@ -207,18 +213,22 @@ LRESULT CALLBACK WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam) 
             int mouseX = LOWORD(lParam);
             int mouseY = HIWORD(lParam);
 
+            // TODO: use isClicked
             // Check if the mouse click is within the boundaries of the button
-            if (mouseX >= exit_button.x && mouseX <= exit_button.x + exit_button.width &&
-                mouseY >= exit_button.y && mouseY <= exit_button.y + exit_button.height) {
+            if (exit_button.isClicked(mouseX, mouseY)) {
                 // Perform action when the button is clicked
                 exit_button.onClick();
             }
 
             // Check if the mouse click is within the boundaries of the button
-            if (mouseX >= pause_button.x && mouseX <= pause_button.x + pause_button.width &&
-                mouseY >= pause_button.y && mouseY <= pause_button.y + pause_button.height) {
+            if (pause_button.isClicked(mouseX, mouseY)) {
                 // Perform action when the button is clicked
                 pause_button.onClick();
+            }
+
+            if (show_pause_menu.isClicked(mouseX, mouseY)) {
+                exit_button.switchRenderState();
+                pause_button.switchRenderState();
             }
         }
             break;
@@ -346,6 +356,13 @@ void renderLevel(const std::vector<std::string>& levelData) {
     // Set color for walls
     glColor3f(0.5f, 0.5f, 0.5f); // Example color (gray)
 
+    // TODO: доделать текстурирование деревом
+    glEnable(GL_TEXTURE_2D);
+    glEnable(GL_BLEND);
+    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+    glBindTexture(GL_TEXTURE_2D, woodTextureID);
+    glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_REPLACE);
+
     // Iterate over the level data
     for (size_t y = 0; y < levelData.size(); ++y) {
         for (size_t x = 0; x < levelData[y].size(); ++x) {
@@ -362,6 +379,9 @@ void renderLevel(const std::vector<std::string>& levelData) {
             // For example, you can use different characters to represent different elements
         }
     }
+
+    glDisable(GL_BLEND);
+    glDisable(GL_TEXTURE_2D);
 }
 
 /*void renderText(const char* text, float x, float y, float scale) {
