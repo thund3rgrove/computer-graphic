@@ -73,14 +73,24 @@ public:
 
         updateAnimation(deltaTime);
 
+        // Store the character's current position as the previous position
+        float prevX = x;
+        float prevY = y;
+
+        updatePosition(deltaTime);
+
+        // std::cout << "curr velocity: " << velocityX << " and position " << x << '\n';
+
         // Check for collision with walls
         if (collidesWithWalls(levelData, tileSize)) {
-            // Handle collision with walls (e.g., stop character's movement)
+            // If collision detected, revert to previous position
+            x = prevX;
+            y = prevY;
+
+            // Stop character's movement
             velocityX = 0;
             velocityY = 0;
         }
-
-        updatePosition(deltaTime);
     }
 
     void render() {
