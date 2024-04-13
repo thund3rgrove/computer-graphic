@@ -14,6 +14,7 @@
 class Button {
 public:
     float x, y, width, height;
+    bool isRendering;
     int texWidth, texHeight;
     GLuint textureID;
     GLuint fontTextureID; // Texture ID for font
@@ -21,19 +22,13 @@ public:
 
     using ClickHandler = std::function<void()>;
 
-    Button() : x(0.0f), y(0.0f), width(0.0f), height(0.0f), textureID(0), texWidth(0), texHeight(0) {}
-    Button(float _x, float _y, float _width, float _height, GLuint _textureID = NULL, ClickHandler _onclick = nullptr) : x(_x), y(_y), width(_width),
-        height(_height), textureID(_textureID), onClickHandler(_onclick) {
+    Button() : x(0.0f), y(0.0f), width(0.0f), height(0.0f), textureID(0), texWidth(0), texHeight(0), isRendering(false) {}
+    Button(float _x, float _y, float _width, float _height, GLuint _textureID = NULL, ClickHandler _onclick = nullptr, bool _isRendering = false) : x(_x), y(_y), width(_width),
+        height(_height), textureID(_textureID), onClickHandler(_onclick), isRendering(_isRendering) {
     }
 
     bool isClicked(float clickX, float clickY) {
-        /*
-                std::cout <<
-                    "BUTTON (" << x << ", " << y << ") :: " <<
-                    clickX << ' ' << clickY << '\n';
-        */
-
-        return (clickX >= x && clickX <= x + width && clickY >= y && clickY <= y + height);
+        return isRendering && (clickX >= x && clickX <= x + width && clickY >= y && clickY <= y + height);
     }
 
     void onClick() {
@@ -42,6 +37,10 @@ public:
         } else {
             std::cout << "Button does not have onClick method set up\n";
         }
+    }
+
+    void onClick(Button& btn) {
+
     }
 
     void renderText(const char* text, float posX, float posY, float scale) {
@@ -80,7 +79,12 @@ public:
         }
     }
 
+    void switchRenderState() {
+        isRendering = !isRendering;
+    }
+
     void render() {
+        if (!isRendering) return;
         // std::cout << "Button position: (" << x << ", " << y << "), size: (" << width << ", " << height << "), textureID: " << textureID << std::endl;
 
         // Ensure that the texture is bound
