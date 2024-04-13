@@ -345,25 +345,37 @@ std::vector<std::string> loadLevel(const std::string& filename) {
 void renderLevel(const std::vector<std::string>& levelData) {
     const float LEVEL_TILE_SIZE = 37.5f; // Adjust this value as needed
 
-    // Set color for walls
-    glColor3f(0.5f, 0.5f, 0.5f); // Example color (gray)
-
-    // TODO: доделать текстурирование деревом
+    // Enable necessary OpenGL states
     glEnable(GL_TEXTURE_2D);
     glEnable(GL_BLEND);
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+
+    // Bind the wood texture
     glBindTexture(GL_TEXTURE_2D, woodTextureID);
-    glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_REPLACE);
+
+    // Set the texture environment mode to modulate
+    glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE);
 
     // Iterate over the level data
     for (size_t y = 0; y < levelData.size(); ++y) {
         for (size_t x = 0; x < levelData[y].size(); ++x) {
             if (levelData[y][x] == '#') {
-                // Render wall
+                // Calculate texture coordinates
+                float texCoordX = static_cast<float>(x) / static_cast<float>(woodTextureWidth);
+                float texCoordY = static_cast<float>(y) / static_cast<float>(woodTextureHeight);
+
+                // Render wall with texture
                 glBegin(GL_QUADS);
+                glTexCoord2f(texCoordX, texCoordY);
                 glVertex2f(x * LEVEL_TILE_SIZE, y * LEVEL_TILE_SIZE);
+
+                glTexCoord2f(texCoordX + 1.0f / woodTextureWidth, texCoordY);
                 glVertex2f((x + 1) * LEVEL_TILE_SIZE, y * LEVEL_TILE_SIZE);
+
+                glTexCoord2f(texCoordX + 1.0f / woodTextureWidth, texCoordY + 1.0f / woodTextureHeight);
                 glVertex2f((x + 1) * LEVEL_TILE_SIZE, (y + 1) * LEVEL_TILE_SIZE);
+
+                glTexCoord2f(texCoordX, texCoordY + 1.0f / woodTextureHeight);
                 glVertex2f(x * LEVEL_TILE_SIZE, (y + 1) * LEVEL_TILE_SIZE);
                 glEnd();
             }
@@ -372,6 +384,7 @@ void renderLevel(const std::vector<std::string>& levelData) {
         }
     }
 
+    // Disable unnecessary OpenGL states
     glDisable(GL_BLEND);
     glDisable(GL_TEXTURE_2D);
 }
