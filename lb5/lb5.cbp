@@ -36,7 +36,9 @@
 			<Add library="glu32" />
 			<Add library="gdi32" />
 		</Linker>
-		<Unit filename="main.c">
+		<Unit filename="camera.cpp" />
+		<Unit filename="camera.h" />
+		<Unit filename="main.cpp">
 			<Option compilerVar="CC" />
 		</Unit>
 		<Extensions>
