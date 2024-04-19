@@ -1,6 +1,6 @@
 #include <windows.h>
 #include <gl/gl.h>
-#include "simplegl-master/Camera.h"
+#include "camera.cpp"
 
 LRESULT CALLBACK WindowProc(HWND, UINT, WPARAM, LPARAM);
 void EnableOpenGL(HWND hwnd, HDC*, HGLRC*);
@@ -199,15 +199,4 @@ void WndResize(int x, int y) {
     float sz = 0.1; // size unit
     glLoadIdentity(); // загрузка единичной матрицы
     glFrustum(-k * sz, k * sz, -sz, sz, sz * 2, 100); // установка перспективной проекции
-}
-
-void MoveCamera() {
-    Camera_MoveDirectional(
-        GetKeyState('W')< 0 ? 1 :
-                           GetKeyState('S')< 0 ? -1 : 0,
-        GetKeyState('D')< 0 ? 1 :
-                           GetKeyState('A')< 0 ? -1 : 0,
-        0.1);
-
-        Camer_AutoMoveByMouse(400,400,0.1);
 }
