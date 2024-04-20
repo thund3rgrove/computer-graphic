@@ -42,11 +42,32 @@ void Camera_MoveDirectional(int forwardMove, int rightMove, float speed) {
         ugol += rightMove > 0 ? M_PI_2 : -M_PI_2;
         if (rightMove == 0) speed = 0;
     }
+
+    bool coordinatesChanged = false;
     if (speed != 0) {
+        float prev_x = camera.x;
+        float prev_y = camera.y;
+        float prev_z = camera.z;
+
         camera.x += sin(ugol) * speed;
         camera.y += cos(ugol) * speed;
+
+        if (camera.x != prev_x || camera.y != prev_y || camera.z != prev_z) {
+            coordinatesChanged = true;
+        }
     }
 
-    std::cout << "camera (x,y,z): (" << camera.x << ", " << camera.y << ", " << camera.z << ")\n";
-    std::cout << "rotation (X, Z): (" << camera.Xrot << ", " << camera.Zrot << ")\n";
+    // if (coordinatesChanged) {
+    //     // Move the cursor to the position where the coordinates are printed
+    //     std::cout << "\033[2;0H"; // Move cursor to line 2, column 0 (adjust as needed)
+    //
+    //     // Clear the line
+    //     std::cout << "\033[K";
+    //
+    //     // Print the updated coordinates
+    //     std::cout << "camera (x,y,z): (" << camera.x << ", " << camera.y << ", " << camera.z << ")";
+    //     std::cout.flush();
+    // }
+    // std::cout << "camera (x,y,z): (" << camera.x << ", " << camera.y << ", " << camera.z << ")\n";
+    // std::cout << "rotation (X, Z): (" << camera.Xrot << ", " << camera.Zrot << ")\n";
 }
