@@ -248,62 +248,6 @@ void WndResize(int x, int y) {
     glMatrixMode(GL_MODELVIEW); // Switch back to the modelview matrix
 }
 
-
-/*void DrawAxes() {
-    // Get window size
-    RECT windowRect;
-    GetClientRect(GetActiveWindow(), &windowRect);
-    int windowWidth = windowRect.right - windowRect.left;
-    int windowHeight = windowRect.bottom - windowRect.top;
-
-    // Define axis length and padding
-    float axisLength = 0.1f * std::min(windowWidth, windowHeight); // Length of each axis line
-    float padding = 0.05f * std::min(windowWidth, windowHeight); // Padding from the edges of the window
-
-    // Get camera rotation angles
-    float camXRot = camera.Xrot;
-    float camZRot = camera.Zrot;
-
-    // Calculate the rotation lines' end points
-    float xAxisEndX = padding + axisLength * cos(camZRot * M_PI / 180.0f);
-    float xAxisEndY = padding + axisLength * sin(camZRot * M_PI / 180.0f);
-    float yAxisEndX = padding + axisLength * cos((camZRot + 90.0f) * M_PI / 180.0f);
-    float yAxisEndY = padding + axisLength * sin((camZRot + 90.0f) * M_PI / 180.0f);
-
-    // Clear buffers
-    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
-    // Set up projection matrix
-    glMatrixMode(GL_PROJECTION);
-    glLoadIdentity();
-    glOrtho(0, windowWidth, 0, windowHeight, -1, 1);
-
-    // Set up modelview matrix
-    glMatrixMode(GL_MODELVIEW);
-    glLoadIdentity();
-
-    // Draw X-axis (red)
-    glColor3f(1.0f, 0.0f, 0.0f); // Red color
-    glBegin(GL_LINES);
-    glVertex2f(padding, padding);
-    glVertex2f(xAxisEndX, xAxisEndY);
-    glEnd();
-
-    // Draw Y-axis (green)
-    glColor3f(0.0f, 1.0f, 0.0f); // Green color
-    glBegin(GL_LINES);
-    glVertex2f(padding, padding);
-    glVertex2f(yAxisEndX, yAxisEndY);
-    glEnd();
-
-    // Draw Z-axis (blue)
-    glColor3f(0.0f, 0.0f, 1.0f); // Blue color
-    glBegin(GL_LINES);
-    glVertex2f(padding, padding);
-    glVertex2f(padding, padding - axisLength);
-    glEnd();
-}*/
-
 void DrawAxes(int windowWidth, int windowHeight) {
     // Define axis length and padding
     float axisLength = 0.1f * std::min(windowWidth, windowHeight); // Length of each axis line
