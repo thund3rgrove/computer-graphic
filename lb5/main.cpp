@@ -100,7 +100,7 @@ int WINAPI WinMain(HINSTANCE hInstance,
             // if (isPlaying) ShowCursor(FALSE);
             // else ShowCursor(TRUE);
                 // Enable OpenGL states and clear buffers
-                glClearColor(0.0f, 0.0f, 0.0f, 1.0f); // Set clear color to black
+                glClearColor((float)255.f/255.f, (float)254.f/255.f, (float)200.f/255.f, 1.0f); // Set background to nice slight yellow :) (255, 254, 200 rgb)
                 glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
                 if (isPlaying && GetForegroundWindow() == hwnd) {
@@ -144,18 +144,12 @@ int WINAPI WinMain(HINSTANCE hInstance,
                 GLenum error = glGetError();
                 if (error != GL_NO_ERROR) {
                     fprintf(stderr, "OpenGL error: %d\n", error);
-                    // Handle or log the error as needed
                 }
 
                 // Swap buffers and update rotation
                 SwapBuffers(hDC);
                 theta += 1.0f;
                 Sleep(1);
-            // } else {
-
-                // ShowCursor(TRUE);
-                // Sleep(100); // Reduce CPU usage
-            // }
         }
     }
 
@@ -334,11 +328,10 @@ void DrawAxes(int windowWidth, int windowHeight) {
 void DrawChessBoard(float startX, float startY, int n) {
     float tileSize = 1.0f; // Size of each tile in the chessboard
 
-    // Iterate over rows
+    // Rows
     for (int i = 0; i < n; ++i) {
-        // Iterate over columns
+        // Columns
         for (int j = 0; j < n; ++j) {
-            // Determine color based on row and column indices
             if ((i + j) % 2 == 0) {
                 // Light color for even indices
                 glColor3f(0.8f, 0.8f, 0.8f); // Light gray
@@ -366,8 +359,6 @@ void DrawChessBoard(float startX, float startY, int n) {
 }
 
 void DrawFloor(float width, float length) {
-    // Set the color to red for the floor
-    // glColor3f(1.0f, 0.0f, 0.0f); // Red color
     glColor3d(204/255.f, 204/255.f, 204/255.f);
 
     // Define the vertices of the floor
