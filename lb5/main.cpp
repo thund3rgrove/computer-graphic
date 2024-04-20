@@ -6,6 +6,8 @@
 #include <gl/glu.h>
 #include "camera.h"
 
+bool isPlaying = true;
+
 LRESULT CALLBACK WindowProc(HWND, UINT, WPARAM, LPARAM);
 
 void EnableOpenGL(HWND hwnd, HDC *, HGLRC *);
@@ -47,7 +49,7 @@ int WINAPI WinMain(HINSTANCE hInstance,
     wcex.hCursor = LoadCursor(NULL, IDC_ARROW);
     wcex.hbrBackground = (HBRUSH) GetStockObject(BLACK_BRUSH);
     wcex.lpszMenuName = NULL;
-    wcex.lpszClassName = "GLSample";
+    wcex.lpszClassName = "ComputerGraphic";
     wcex.hIconSm = LoadIcon(NULL, IDI_APPLICATION);
 
     if (!RegisterClassEx(&wcex))
@@ -55,8 +57,8 @@ int WINAPI WinMain(HINSTANCE hInstance,
 
     /* create main window */
     hwnd = CreateWindowEx(0,
-                          "GLSample",
-                          "OpenGL Sample",
+                          "ComputerGraphic",
+                          "Lab 5",
                           WS_OVERLAPPEDWINDOW,
                           CW_USEDEFAULT,
                           CW_USEDEFAULT,
@@ -69,6 +71,7 @@ int WINAPI WinMain(HINSTANCE hInstance,
 
 
     ShowWindow(hwnd, nCmdShow);
+    ShowCursor(FALSE);
 
     RECT windowRect;
     GetClientRect(hwnd, &windowRect);
@@ -76,6 +79,7 @@ int WINAPI WinMain(HINSTANCE hInstance,
     int windowHeight = windowRect.bottom - windowRect.top;
 
     WndResize(windowRect.right, windowRect.bottom);
+
 
     /* enable OpenGL for the window */
     EnableOpenGL(hwnd, &hDC, &hRC);
@@ -92,56 +96,66 @@ int WINAPI WinMain(HINSTANCE hInstance,
                 DispatchMessage(&msg);
             }
         } else {
-            // Enable OpenGL states and clear buffers
-            glClearColor(0.0f, 0.0f, 0.0f, 1.0f); // Set clear color to black
-            glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+            // if (isPlaying) {
+            // if (isPlaying) ShowCursor(FALSE);
+            // else ShowCursor(TRUE);
+                // Enable OpenGL states and clear buffers
+                glClearColor(0.0f, 0.0f, 0.0f, 1.0f); // Set clear color to black
+                glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-            if (GetForegroundWindow() == hwnd) MoveCamera();
+                if (isPlaying && GetForegroundWindow() == hwnd) {
+                    MoveCamera();
+                }
 
-            // Set up projection matrix
-            glMatrixMode(GL_PROJECTION);
-            glLoadIdentity();
-            gluPerspective(45.0f, (float) windowWidth / (float) windowHeight, 0.1f, 100.0f);
+                // Set up projection matrix
+                glMatrixMode(GL_PROJECTION);
+                glLoadIdentity();
+                gluPerspective(45.0f, (float) windowWidth / (float) windowHeight, 0.1f, 100.0f);
 
-            // Set up modelview matrix
-            glMatrixMode(GL_MODELVIEW);
-            glLoadIdentity();
+                // Set up modelview matrix
+                glMatrixMode(GL_MODELVIEW);
+                glLoadIdentity();
 
-            // Move the camera
-            Camera_Apply();
+                // Move the camera
+                Camera_Apply();
 
-            // Draw the floor
-            glPushMatrix();
-            DrawFloor(200, 200);
-            glPopMatrix();
+                // Draw the floor
+                glPushMatrix();
+                DrawFloor(200, 200);
+                glPopMatrix();
 
-            // Draw the triangle
-            glPushMatrix();
-            DrawSpinningTriangle(theta);
-            glPopMatrix();
+                // Draw the triangle
+                glPushMatrix();
+                DrawSpinningTriangle(theta);
+                glPopMatrix();
 
-            // Draw the axes
-            glPushMatrix();
-            DrawAxes(windowWidth, windowHeight);
-            glPopMatrix();
+                // Draw the axes
+                glPushMatrix();
+                DrawAxes(windowWidth, windowHeight);
+                glPopMatrix();
 
-            // Render chess board
-            glPushMatrix();
-            DrawChessBoard(5.0f, 3.0f, 8); // Draw the chessboard starting from coordinates (5, 3)
-            glPopMatrix();
+                // Render chess board
+                glPushMatrix();
+                DrawChessBoard(5.0f, 3.0f, 8); // Draw the chessboard starting from coordinates (5, 3)
+                glPopMatrix();
 
 
-            // Check for OpenGL errors
-            GLenum error = glGetError();
-            if (error != GL_NO_ERROR) {
-                fprintf(stderr, "OpenGL error: %d\n", error);
-                // Handle or log the error as needed
-            }
+                // Check for OpenGL errors
+                GLenum error = glGetError();
+                if (error != GL_NO_ERROR) {
+                    fprintf(stderr, "OpenGL error: %d\n", error);
+                    // Handle or log the error as needed
+                }
 
-            // Swap buffers and update rotation
-            SwapBuffers(hDC);
-            theta += 1.0f;
-            Sleep(1);
+                // Swap buffers and update rotation
+                SwapBuffers(hDC);
+                theta += 1.0f;
+                Sleep(1);
+            // } else {
+
+                // ShowCursor(TRUE);
+                // Sleep(100); // Reduce CPU usage
+            // }
         }
     }
 
@@ -168,6 +182,7 @@ LRESULT CALLBACK WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam) 
             switch (wParam) {
                 case VK_ESCAPE:
                     PostQuitMessage(0);
+                    // isPlaying = !isPlaying;
                     break;
             }
             break;
