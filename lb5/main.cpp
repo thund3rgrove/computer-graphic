@@ -1,19 +1,31 @@
+#include <cmath>
+#include <iostream>
+#include <stdio.h>
 #include <windows.h>
 #include <gl/gl.h>
+#include <gl/glu.h>
 #include "camera.h"
 
 LRESULT CALLBACK WindowProc(HWND, UINT, WPARAM, LPARAM);
-void EnableOpenGL(HWND hwnd, HDC*, HGLRC*);
+
+void EnableOpenGL(HWND hwnd, HDC *, HGLRC *);
+
 void DisableOpenGL(HWND, HDC, HGLRC);
 
 void WndResize(int x, int y);
+
 void MoveCamera();
+
+void DrawFloor(float width, float length);
+
+void DrawAxes(int windowWidth, int windowHeight);
+
+void DrawChessBoard(float startX, float startY, int n = 8);
 
 int WINAPI WinMain(HINSTANCE hInstance,
                    HINSTANCE hPrevInstance,
                    LPSTR lpCmdLine,
-                   int nCmdShow)
-{
+                   int nCmdShow) {
     WNDCLASSEX wcex;
     HWND hwnd;
     HDC hDC;
@@ -31,11 +43,10 @@ int WINAPI WinMain(HINSTANCE hInstance,
     wcex.hInstance = hInstance;
     wcex.hIcon = LoadIcon(NULL, IDI_APPLICATION);
     wcex.hCursor = LoadCursor(NULL, IDC_ARROW);
-    wcex.hbrBackground = (HBRUSH)GetStockObject(BLACK_BRUSH);
+    wcex.hbrBackground = (HBRUSH) GetStockObject(BLACK_BRUSH);
     wcex.lpszMenuName = NULL;
     wcex.lpszClassName = "GLSample";
-    wcex.hIconSm = LoadIcon(NULL, IDI_APPLICATION);;
-
+    wcex.hIconSm = LoadIcon(NULL, IDI_APPLICATION);
 
     if (!RegisterClassEx(&wcex))
         return 0;
@@ -47,75 +58,100 @@ int WINAPI WinMain(HINSTANCE hInstance,
                           WS_OVERLAPPEDWINDOW,
                           CW_USEDEFAULT,
                           CW_USEDEFAULT,
-                          256,
-                          256,
+                          800,
+                          600,
                           NULL,
                           NULL,
                           hInstance,
                           NULL);
 
+
     ShowWindow(hwnd, nCmdShow);
+
+    RECT windowRect;
+    GetClientRect(hwnd, &windowRect);
+    int windowWidth = windowRect.right - windowRect.left;
+    int windowHeight = windowRect.bottom - windowRect.top;
+
+    WndResize(windowRect.right, windowRect.bottom);
 
     /* enable OpenGL for the window */
     EnableOpenGL(hwnd, &hDC, &hRC);
 
-    glEnable(GL_DEPTH_TEST);
-
-
-    RECT rct;
-    GetClientRect(hwnd, &rct);
-    WndResize(rct.right, rct.bottom);
-
     /* program main loop */
-    while (!bQuit)
-    {
+    while (!bQuit) {
         /* check for messages */
-        if (PeekMessage(&msg, NULL, 0, 0, PM_REMOVE))
-        {
+        if (PeekMessage(&msg, NULL, 0, 0, PM_REMOVE)) {
             /* handle or dispatch messages */
-            if (msg.message == WM_QUIT)
-            {
+            if (msg.message == WM_QUIT) {
                 bQuit = TRUE;
-            }
-            else
-            {
+            } else {
                 TranslateMessage(&msg);
                 DispatchMessage(&msg);
             }
-        }
-        else
-        {
-            // Always first
-            glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
+        } else {
+            // Enable OpenGL states and clear buffers
+            glClearColor(0.0f, 0.0f, 0.0f, 1.0f); // Set clear color to black
             glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-            //
 
+            if (GetForegroundWindow() == hwnd) MoveCamera();
 
-            if (GetForegroundWindow()==hwnd) MoveCamera();
-            /* OpenGL animation code goes here */
+            // Set up projection matrix
+            glMatrixMode(GL_PROJECTION);
+            glLoadIdentity();
+            gluPerspective(45.0f, (float) windowWidth / (float) windowHeight, 0.1f, 100.0f);
 
-            glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
-            glClear(GL_COLOR_BUFFER_BIT);
+            // Set up modelview matrix
+            glMatrixMode(GL_MODELVIEW);
+            glLoadIdentity();
+
+            // Move the camera
+            Camera_Apply();
 
             glPushMatrix();
+            DrawFloor(200, 200);
+            glPopMatrix();
+
+            // Draw the triangle
+            glPushMatrix();
+            // Apply rotation to the entire scene
             glRotatef(theta, 0.0f, 0.0f, 1.0f);
 
             glBegin(GL_TRIANGLES);
-
-                glColor3f(1.0f, 0.0f, 0.0f);   glVertex2f(0.0f,   1.0f);
-                glColor3f(0.0f, 1.0f, 0.0f);   glVertex2f(0.87f,  -0.5f);
-                glColor3f(0.0f, 0.0f, 1.0f);   glVertex2f(-0.87f, -0.5f);
-
+            glColor3f(1.0f, 0.0f, 0.0f);
+            glVertex3f(0.0f, 1.0f, 0.0f);
+            glColor3f(0.0f, 1.0f, 0.0f);
+            glVertex3f(0.87f, -0.5f, 0.0f);
+            glColor3f(0.0f, 0.0f, 1.0f);
+            glVertex3f(-0.87f, -0.5f, 0.0f);
             glEnd();
-
             glPopMatrix();
 
-            SwapBuffers(hDC);
+            // Draw the axes
+            glPushMatrix();
+            DrawAxes(windowWidth, windowHeight);
+            glPopMatrix();
 
+            // Render chess board
+            glPushMatrix();
+            DrawChessBoard(5.0f, 3.0f, 8); // Draw the chessboard starting from coordinates (5, 3)
+            glPopMatrix();
+
+
+            // Check for OpenGL errors
+            GLenum error = glGetError();
+            if (error != GL_NO_ERROR) {
+                fprintf(stderr, "OpenGL error: %d\n", error);
+                // Handle or log the error as needed
+            }
+
+            // Swap buffers and update rotation
+            SwapBuffers(hDC);
             theta += 1.0f;
-            Sleep (1);
+            Sleep(1);
         }
     }
+
 
     /* shutdown OpenGL */
     DisableOpenGL(hwnd, hDC, hRC);
@@ -126,27 +162,27 @@ int WINAPI WinMain(HINSTANCE hInstance,
     return msg.wParam;
 }
 
-LRESULT CALLBACK WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
-{
-    switch (uMsg)
-    {
+LRESULT CALLBACK WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam) {
+    switch (uMsg) {
         case WM_CLOSE:
             PostQuitMessage(0);
-        break;
+            break;
 
         case WM_DESTROY:
             return 0;
 
         case WM_KEYDOWN:
-        {
-            switch (wParam)
-            {
+            switch (wParam) {
                 case VK_ESCAPE:
                     PostQuitMessage(0);
-                break;
+                    break;
             }
-        }
-        break;
+            break;
+
+        case WM_SIZE:
+            WndResize(LOWORD(lParam), HIWORD(lParam));
+            break;
+
 
         default:
             return DefWindowProc(hwnd, uMsg, wParam, lParam);
@@ -155,10 +191,8 @@ LRESULT CALLBACK WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
     return 0;
 }
 
-void EnableOpenGL(HWND hwnd, HDC* hDC, HGLRC* hRC)
-{
+void EnableOpenGL(HWND hwnd, HDC *hDC, HGLRC *hRC) {
     PIXELFORMATDESCRIPTOR pfd;
-
     int iFormat;
 
     /* get the device context (DC) */
@@ -186,26 +220,206 @@ void EnableOpenGL(HWND hwnd, HDC* hDC, HGLRC* hRC)
     wglMakeCurrent(*hDC, *hRC);
 }
 
-void DisableOpenGL (HWND hwnd, HDC hDC, HGLRC hRC)
-{
+void DisableOpenGL(HWND hwnd, HDC hDC, HGLRC hRC) {
     wglMakeCurrent(NULL, NULL);
     wglDeleteContext(hRC);
     ReleaseDC(hwnd, hDC);
 }
 
-void WndResize(int x, int y) {
-    glViewport(0, 0, x, y); // перестраивает размеры окна
-    float k = x / (float)y; // aspect ratio
-    float sz = 0.1; // size unit
-    glLoadIdentity(); // загрузка единичной матрицы
-    glFrustum(-k * sz, k * sz, -sz, sz, sz * 2, 100); // установка перспективной проекции
-}
-
-void MoveCamera(){
+void MoveCamera() {
     Camera_MoveDirectional(
-        GetKeyState('W')< 0 ? 1 : GetKeyState('S')< 0 ? -1 : 0,
-        GetKeyState('D')< 0 ? 1 : GetKeyState('A')< 0 ? -1 : 0,
-    0.1);
-
-    Camer_AutoMoveByMouse(400,400,0.1);
+        GetKeyState('W') < 0 ? 1 : GetKeyState('S') < 0 ? -1 : 0,
+        GetKeyState('D') < 0 ? 1 : GetKeyState('A') < 0 ? -1 : 0,
+        0.1);
+    Camera_AutoMoveByMouse(400, 400, 0.1);
 }
+
+void WndResize(int x, int y) {
+    glViewport(0, 0, x, y); // Resize the viewport to match the new window size
+
+    glMatrixMode(GL_PROJECTION); // Switch to the projection matrix
+    glLoadIdentity(); // Reset the projection matrix
+
+    float aspectRatio = (float) x / (float) y; // Calculate the new aspect ratio
+
+    // Set up a perspective projection matrix
+    gluPerspective(45.0f, aspectRatio, 0.1f, 100.0f);
+
+    glMatrixMode(GL_MODELVIEW); // Switch back to the modelview matrix
+}
+
+
+/*void DrawAxes() {
+    // Get window size
+    RECT windowRect;
+    GetClientRect(GetActiveWindow(), &windowRect);
+    int windowWidth = windowRect.right - windowRect.left;
+    int windowHeight = windowRect.bottom - windowRect.top;
+
+    // Define axis length and padding
+    float axisLength = 0.1f * std::min(windowWidth, windowHeight); // Length of each axis line
+    float padding = 0.05f * std::min(windowWidth, windowHeight); // Padding from the edges of the window
+
+    // Get camera rotation angles
+    float camXRot = camera.Xrot;
+    float camZRot = camera.Zrot;
+
+    // Calculate the rotation lines' end points
+    float xAxisEndX = padding + axisLength * cos(camZRot * M_PI / 180.0f);
+    float xAxisEndY = padding + axisLength * sin(camZRot * M_PI / 180.0f);
+    float yAxisEndX = padding + axisLength * cos((camZRot + 90.0f) * M_PI / 180.0f);
+    float yAxisEndY = padding + axisLength * sin((camZRot + 90.0f) * M_PI / 180.0f);
+
+    // Clear buffers
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+    // Set up projection matrix
+    glMatrixMode(GL_PROJECTION);
+    glLoadIdentity();
+    glOrtho(0, windowWidth, 0, windowHeight, -1, 1);
+
+    // Set up modelview matrix
+    glMatrixMode(GL_MODELVIEW);
+    glLoadIdentity();
+
+    // Draw X-axis (red)
+    glColor3f(1.0f, 0.0f, 0.0f); // Red color
+    glBegin(GL_LINES);
+    glVertex2f(padding, padding);
+    glVertex2f(xAxisEndX, xAxisEndY);
+    glEnd();
+
+    // Draw Y-axis (green)
+    glColor3f(0.0f, 1.0f, 0.0f); // Green color
+    glBegin(GL_LINES);
+    glVertex2f(padding, padding);
+    glVertex2f(yAxisEndX, yAxisEndY);
+    glEnd();
+
+    // Draw Z-axis (blue)
+    glColor3f(0.0f, 0.0f, 1.0f); // Blue color
+    glBegin(GL_LINES);
+    glVertex2f(padding, padding);
+    glVertex2f(padding, padding - axisLength);
+    glEnd();
+}*/
+
+void DrawAxes(int windowWidth, int windowHeight) {
+    // Define axis length and padding
+    float axisLength = 0.1f * std::min(windowWidth, windowHeight); // Length of each axis line
+    float padding = 50.0f; // Padding from the edges of the window
+
+    // Get camera rotation angles
+    float camXRot = camera.Xrot;
+    float camZRot = camera.Zrot;
+
+    // Calculate the rotation lines' end points
+    float xAxisEndX = padding + axisLength * cos(camZRot * M_PI / 180.0f);
+    float xAxisEndY = padding + axisLength * sin(camZRot * M_PI / 180.0f);
+    float yAxisEndX = padding - axisLength * sin(camZRot * M_PI / 180.0f);
+    float yAxisEndY = padding + axisLength * cos(camZRot * M_PI / 180.0f);
+    float zAxisEndX = padding + axisLength * cos(camXRot * M_PI / 180.0f);
+    float zAxisEndY = padding + axisLength * sin(camXRot * M_PI / 180.0f);
+
+    // Clear the depth buffer to ensure the axes are drawn in front of everything else
+    glClear(GL_DEPTH_BUFFER_BIT);
+
+    // Set up projection matrix
+    glMatrixMode(GL_PROJECTION);
+    glPushMatrix();
+    glLoadIdentity();
+    glOrtho(0, windowWidth, 0, windowHeight, -1, 1);
+
+    // Set up modelview matrix
+    glMatrixMode(GL_MODELVIEW);
+    glPushMatrix();
+    glLoadIdentity();
+
+    // Draw X-axis (red)
+    glColor3f(1.0f, 0.0f, 0.0f); // Red color
+    glBegin(GL_LINES);
+    glVertex2f(padding, padding);
+    glVertex2f(xAxisEndX, xAxisEndY);
+    glEnd();
+
+    // Draw Y-axis (green)
+    glColor3f(0.0f, 1.0f, 0.0f); // Green color
+    glBegin(GL_LINES);
+    glVertex2f(padding, padding);
+    glVertex2f(yAxisEndX, yAxisEndY);
+    glEnd();
+
+    // Draw Z-axis (blue)
+    glColor3f(0.0f, 0.0f, 1.0f); // Blue color
+    glBegin(GL_LINES);
+    glVertex2f(padding, padding);
+    glVertex2f(zAxisEndX, zAxisEndY);
+    glEnd();
+
+    // Restore the projection matrix
+    glPopMatrix();
+    glMatrixMode(GL_PROJECTION);
+
+    // Restore the modelview matrix
+    glPopMatrix();
+    glMatrixMode(GL_MODELVIEW);
+}
+
+void DrawChessBoard(float startX, float startY, int n) {
+    float tileSize = 1.0f; // Size of each tile in the chessboard
+
+    // Iterate over rows
+    for (int i = 0; i < n; ++i) {
+        // Iterate over columns
+        for (int j = 0; j < n; ++j) {
+            // Determine color based on row and column indices
+            if ((i + j) % 2 == 0) {
+                // Light color for even indices
+                glColor3f(0.8f, 0.8f, 0.8f); // Light gray
+            } else {
+                // Dark color for odd indices
+                glColor3f(0.2f, 0.2f, 0.2f); // Dark gray
+            }
+
+            // Calculate the position of the current tile
+            float x = startX + j * tileSize;
+            float y = startY + i * tileSize;
+
+            // Print the coordinates of the current tile
+            // std::cout << "Tile at (" << x << ", 0, " << y << ")" << std::endl;
+
+            // Draw the current tile as a quadrilateral
+            glBegin(GL_QUADS);
+            glVertex3f(x, 0.0f, y);
+            glVertex3f(x + tileSize, 0.0f, y);
+            glVertex3f(x + tileSize, 0.0f, y + tileSize);
+            glVertex3f(x, 0.0f, y + tileSize);
+            glEnd();
+        }
+    }
+}
+
+void DrawFloor(float width, float length) {
+    // Set the color to red for the floor
+    // glColor3f(1.0f, 0.0f, 0.0f); // Red color
+    glColor3d(204/255.f, 204/255.f, 204/255.f);
+
+    // Define the vertices of the floor
+    float minX = -width / 2.0f; // Calculate minimum x-coordinate
+    float minY = -length / 2.0f; // Calculate minimum y-coordinate
+    float maxX = width / 2.0f; // Calculate maximum x-coordinate
+    float maxY = length / 2.0f; // Calculate maximum y-coordinate
+
+    // Draw the floor as a quadrilateral lying on the x-y plane
+    glBegin(GL_QUADS);
+    glVertex3f(minX, minY, 0.0f);
+    glVertex3f(maxX, minY, 0.0f);
+    glVertex3f(maxX, maxY, 0.0f);
+    glVertex3f(minX, maxY, 0.0f);
+    glEnd();
+}
+
+
+
+
+

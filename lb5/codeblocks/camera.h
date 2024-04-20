@@ -6,11 +6,9 @@ struct SCamera {
     float Xrot,Zrot;
 };
 
-extern struct SCamera camera;
-
 void Camera_Apply();
 void Camera_Rotation(float xAngle, float zAngle);
-void Camera_AutoMoveByMouse(int centerX, int centerY, float speed);
+void Camer_AutoMoveByMouse(int centerX, int centerY, float speed);
 void Camera_MoveDirectional(int forwardMove, int rightMove, float speed);
 
 #endif // CAMERA_H_INCLUDED
