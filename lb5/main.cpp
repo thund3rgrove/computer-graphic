@@ -16,6 +16,8 @@ void WndResize(int x, int y);
 
 void MoveCamera();
 
+void DrawSpinningTriangle(float theta);
+
 void DrawFloor(float width, float length);
 
 void DrawAxes(int windowWidth, int windowHeight);
@@ -108,23 +110,14 @@ int WINAPI WinMain(HINSTANCE hInstance,
             // Move the camera
             Camera_Apply();
 
+            // Draw the floor
             glPushMatrix();
             DrawFloor(200, 200);
             glPopMatrix();
 
             // Draw the triangle
             glPushMatrix();
-            // Apply rotation to the entire scene
-            glRotatef(theta, 0.0f, 0.0f, 1.0f);
-
-            glBegin(GL_TRIANGLES);
-            glColor3f(1.0f, 0.0f, 0.0f);
-            glVertex3f(0.0f, 1.0f, 0.0f);
-            glColor3f(0.0f, 1.0f, 0.0f);
-            glVertex3f(0.87f, -0.5f, 0.0f);
-            glColor3f(0.0f, 0.0f, 1.0f);
-            glVertex3f(-0.87f, -0.5f, 0.0f);
-            glEnd();
+            DrawSpinningTriangle(theta);
             glPopMatrix();
 
             // Draw the axes
@@ -246,6 +239,20 @@ void WndResize(int x, int y) {
     gluPerspective(45.0f, aspectRatio, 0.1f, 100.0f);
 
     glMatrixMode(GL_MODELVIEW); // Switch back to the modelview matrix
+}
+
+void DrawSpinningTriangle(float theta) {
+    // Apply rotation to the entire scene
+    glRotatef(theta, 0.0f, 0.0f, 1.0f);
+
+    glBegin(GL_TRIANGLES);
+    glColor3f(1.0f, 0.0f, 0.0f);
+    glVertex3f(0.0f, 1.0f, 0.0f);
+    glColor3f(0.0f, 1.0f, 0.0f);
+    glVertex3f(0.87f, -0.5f, 0.0f);
+    glColor3f(0.0f, 0.0f, 1.0f);
+    glVertex3f(-0.87f, -0.5f, 0.0f);
+    glEnd();
 }
 
 void DrawAxes(int windowWidth, int windowHeight) {
