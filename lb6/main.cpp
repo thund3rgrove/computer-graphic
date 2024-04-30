@@ -6,7 +6,9 @@
 #include <gl/glu.h>
 #include "camera.h"
 
+// Constaints
 bool isPlaying = true;
+bool isCameraLightOn = true;
 
 LRESULT CALLBACK WindowProc(HWND, UINT, WPARAM, LPARAM);
 
@@ -162,20 +164,22 @@ int WINAPI WinMain(HINSTANCE hInstance,
 
             // Bulb
 
+            // Outer matrix
             glPushMatrix();
 
-            // Set the radius of the bulb's rotation around the cube
+            // Radius of rotation around the cube
             float radius = 12.0f;
 
             // Calculate the position of the bulb relative to the cube's center
             float bulb_x = radius * cos(theta * M_PI / 180); // Convert theta to radians
             float bulb_y = radius * sin(theta * M_PI / 180); // Convert theta to radians
 
-            // Translate the bulb to the desired position relative to the cube
-            glTranslatef(2.0f + bulb_x, 2.0f + bulb_y, 8.0f); // Adjust the z-coordinate as needed
+            glTranslatef(2.0f + bulb_x, 2.0f + bulb_y, 8.0f);
 
+            // Inner matrix
             glPushMatrix();
-            // Calculate the angle between the x-axis and the line connecting the bulb to the center of the cube
+
+            // Angle between the x-axis and the line connecting the bulb to the center of the cube
             float angle = atan2(bulb_y, bulb_x) * 180 / M_PI + 90;
 
             // Rotate the bulb around its own axis
@@ -184,17 +188,17 @@ int WINAPI WinMain(HINSTANCE hInstance,
             // Lean the bulb by 45 degrees around the X-axis
             glRotatef(45, 1.0f, 0.0f, 0.0f);
 
-            // Define the bulb's color, width, and height
+            // Color
             GLfloat bulb_color[] = {1.0f, 0.5f, 0.0f}; // Orange color
-            GLfloat bulb_width = 3.0f; // Width of the bulb
-            GLfloat bulb_height = 3.0f; // Height of the bulb
 
-            // Draw the bulb with the specified parameters
-            Draw_Bulb(bulb_color, bulb_width, bulb_height);
+            // Draw the bulb
+            Draw_Bulb(bulb_color, (GLfloat)3.f, (GLfloat)3.f);
+
+            // End Inner matrix
             glPopMatrix();
 
+            // End Outer matrix
             glPopMatrix();
-
 
             //
 
@@ -237,6 +241,15 @@ LRESULT CALLBACK WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam) 
                     PostQuitMessage(0);
                 // isPlaying = !isPlaying;
                     break;
+                case 'T': {
+                    isCameraLightOn = !isCameraLightOn;
+                    if (isCameraLightOn) {
+                        glEnable(GL_LIGHT0);
+                    } else {
+                        glDisable(GL_LIGHT0);
+                    }
+                    break;
+                }
             }
             break;
 
@@ -608,6 +621,7 @@ void Draw_Cube() {
     glDisable(GL_CULL_FACE);
 }
 
+// TODO: remove redundant comments
 void Draw_Bulb(GLfloat bulb_color[], GLfloat bulb_width, GLfloat bulb_height, GLfloat bulb_position[]) {
     // Set default color if not provided
     GLfloat default_color[] = {1.0f, 1.0f, 0.0f}; // Yellow color
