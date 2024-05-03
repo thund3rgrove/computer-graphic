@@ -75,8 +75,8 @@ int WINAPI WinMain(HINSTANCE hInstance,
                           WS_OVERLAPPEDWINDOW,
                           CW_USEDEFAULT,
                           CW_USEDEFAULT,
-                          800,
-                          600,
+                          1600,
+                          900,
                           NULL,
                           NULL,
                           hInstance,
@@ -152,9 +152,9 @@ int WINAPI WinMain(HINSTANCE hInstance,
             glPopMatrix();
 
             // Render chess board
-            glPushMatrix();
-            DrawChessBoard(5.0f, 3.0f, 8); // Draw the chessboard starting from coordinates (5, 3)
-            glPopMatrix();
+            // glPushMatrix();
+            // DrawChessBoard(5.0f, 3.0f, 8); // Draw the chessboard starting from coordinates (5, 3)
+            // glPopMatrix();
 
             glPushMatrix();
             glTranslatef(2.f, 2.f, 2.f);
@@ -170,6 +170,7 @@ int WINAPI WinMain(HINSTANCE hInstance,
             // Radius of rotation around the cube
             float radius = 12.0f;
 
+            // // TODO: make theta instead of 0
             // Calculate the position of the bulb relative to the cube's center
             float bulb_x = radius * cos(theta * M_PI / 180); // Convert theta to radians
             float bulb_y = radius * sin(theta * M_PI / 180); // Convert theta to radians
@@ -189,10 +190,10 @@ int WINAPI WinMain(HINSTANCE hInstance,
             glRotatef(45, 1.0f, 0.0f, 0.0f);
 
             // Color
-            GLfloat bulb_color[] = {1.0f, 0.5f, 0.0f}; // Orange color
+            // GLfloat bulb_color[] = {1.f, 0.5f, 0.f}; // Orange color
 
             // Draw the bulb
-            Draw_Bulb(bulb_color, (GLfloat)3.f, (GLfloat)3.f);
+            Draw_Bulb(new GLfloat[]{1.f, .5f, .5f, .5f}, (GLfloat)3.f, (GLfloat)3.f);
 
             // End Inner matrix
             glPopMatrix();
@@ -517,7 +518,7 @@ void Init_Material() {
 
 void Draw_Cube() {
     // Dimensions (0.5 to half a size)
-    GLfloat vertices[] = {
+    const GLfloat vertices[] = {
         -1.0, -1.0, 1.0, // A
         1.0, -1.0, 1.0, // B
         1.0, 1.0, 1.0, // D
@@ -529,7 +530,7 @@ void Draw_Cube() {
         -1.0, 1.0, -1.0, // G
     };
 
-    GLuint indices[] = {
+    const GLuint indices[] = {
         0, 1, 2, // Front face (ABC)
         2, 3, 0, // Front face (CDA)
 
@@ -546,67 +547,10 @@ void Draw_Cube() {
         6, 7, 3, // Top face (HGD)
 
         4, 5, 1, // Bottom face (EFB)
-        1, 0, 4 // Bottom face (BAE)
+        1, 0, 4, // Bottom face (BAE)
     };
 
-
-    /*GLfloat normals[] = {
-        // Front face (ABC)
-        0.0, 0.0, 1.0,
-        0.0, 0.0, 1.0,
-        0.0, 0.0, 1.0,
-
-        0.0, 0.0, 1.0,
-        0.0, 0.0, 1.0,
-        0.0, 0.0, 1.0,
-
-        // Right face (BFH)
-        1.0, 0.0, 0.0,
-        1.0, 0.0, 0.0,
-        1.0, 0.0, 0.0,
-
-        1.0, 0.0, 0.0,
-        1.0, 0.0, 0.0,
-        1.0, 0.0, 0.0,
-
-        // Back face (GHF)
-        0.0, 0.0, -1.0,
-        0.0, 0.0, -1.0,
-        0.0, 0.0, -1.0,
-
-        0.0, 0.0, -1.0,
-        0.0, 0.0, -1.0,
-        0.0, 0.0, -1.0,
-
-        // Left face (EAD)
-        -1.0, 0.0, 0.0,
-        -1.0, 0.0, 0.0,
-        -1.0, 0.0, 0.0,
-
-        -1.0, 0.0, 0.0,
-        -1.0, 0.0, 0.0,
-        -1.0, 0.0, 0.0,
-
-        // Top face (DCH)
-        0.0, 1.0, 0.0,
-        0.0, 1.0, 0.0,
-        0.0, 1.0, 0.0,
-
-        0.0, 1.0, 0.0,
-        0.0, 1.0, 0.0,
-        0.0, 1.0, 0.0,
-
-        // Bottom face (EFB)
-        0.0, -1.0, 0.0,
-        0.0, -1.0, 0.0,
-        0.0, -1.0, 0.0,
-
-        0.0, -1.0, 0.0,
-        0.0, -1.0, 0.0,
-        0.0, -1.0, 0.0
-    };*/
-
-    GLfloat normals[] = {
+    const GLfloat normals[] = {
         0.0f, 0.0f, -1.0f,
         0.0f, 0.0f, -1.0f,
         0.0f, 0.0f, -1.0f,
@@ -631,19 +575,24 @@ void Draw_Cube() {
         0.0f, 1.0f, 0.0f,
         0.0f, 1.0f, 0.0f,
         0.0f, 1.0f, 0.0f
-       };
+    };
 
+    glColor3f(0.9f, 0.0f, 0.9f); // Лиловый цвет
 
     glEnable(GL_CULL_FACE);
     glCullFace(GL_BACK);
 
     glEnableClientState(GL_VERTEX_ARRAY);
     glEnableClientState(GL_NORMAL_ARRAY);
+
     glVertexPointer(3, GL_FLOAT, 0, vertices);
-    glNormalPointer(GL_FLOAT, 0, normals);
+    glNormalPointer(GL_FLOAT, 0, normals); // Provide normals to OpenGL
+
     glDrawElements(GL_TRIANGLES, 36, GL_UNSIGNED_INT, indices);
-    glDisableClientState(GL_VERTEX_ARRAY);
+    // glDrawArrays(GL_QUADS, 0, 24);
+
     glDisableClientState(GL_NORMAL_ARRAY);
+    glDisableClientState(GL_VERTEX_ARRAY);
 
     glDisable(GL_CULL_FACE);
 }
@@ -662,29 +611,33 @@ void Draw_Bulb(GLfloat bulb_color[], GLfloat bulb_width, GLfloat bulb_height, GL
         bulb_position = default_position;
     }
 
-    // Set the color of the bulb
-    glColor3fv(bulb_color);
+    // Set the color of the bulb with intensity
+    GLfloat intensity = 20.f;
+    GLfloat bulb_color_with_intensity[3]; // Array to store color with intensity
+    for (int i = 0; i < 3; ++i) {
+        bulb_color_with_intensity[i] = bulb_color[i] * intensity;
+    }
 
     // Set the position of the bulb light source
     GLfloat light_position[] = {bulb_position[0], bulb_position[1], bulb_position[2], 1.0f};
     // Set as a positional light
 
-    // Set up the light source properties
+    // Set up the light properties
     glEnable(GL_LIGHT1); // Enable the additional light source
-    glLightfv(GL_LIGHT1, GL_DIFFUSE, bulb_color); // Use the same color as the bulb for illumination
-    glLightfv(GL_LIGHT1, GL_POSITION, light_position); // Position the light source at the bulb's position
+    glLightfv(GL_LIGHT1, GL_DIFFUSE, bulb_color_with_intensity); // Make illumination color to bulb_color
+    glLightfv(GL_LIGHT1, GL_POSITION, light_position);
 
-    // Set up the light source direction (optional)
-    // Adjust these values to make the light directional
-    GLfloat light_direction[] = {0.0f, 0.0f, -1.0f}; // Example direction (pointing towards the cube)
+    // Set up the light direction
+    GLfloat light_direction[] = {0.0f, 0.0f, -1.0f}; // Pointing towards the cube
     glLightfv(GL_LIGHT1, GL_SPOT_DIRECTION, light_direction);
+    glLightf(GL_LIGHT1, GL_SPOT_EXPONENT, 128.0f); // Adjusted exponent for smoother illumination, set to ~5-10
 
-    // Set up the light source cutoff angle (optional)
-    // Adjust these values to control the spread of the light
-    GLfloat light_cutoff = 15.0f; // Example cutoff angle (in degrees). 10 is good
+    // Set up the light cutoff angle
+    GLfloat light_cutoff = 15.0f; // 10 is also good
     glLightf(GL_LIGHT1, GL_SPOT_CUTOFF, light_cutoff);
 
     // Draw the bulb as a simple rectangle
+    glColor3fv(bulb_color_with_intensity);
     glPushMatrix();
     glTranslatef(bulb_position[0], bulb_position[1], bulb_position[2]);
     glBegin(GL_QUADS);
@@ -695,6 +648,3 @@ void Draw_Bulb(GLfloat bulb_color[], GLfloat bulb_width, GLfloat bulb_height, GL
     glEnd();
     glPopMatrix();
 }
-
-
-
