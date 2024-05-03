@@ -535,83 +535,66 @@ void Init_Material() {
 void Draw_Cube() {
     // Dimensions (0.5 to half a size)
     const GLfloat vertices[] = {
-        -1.0, -1.0, 1.0, // A
-        1.0, -1.0, 1.0, // B
-        1.0, 1.0, 1.0, // D
-        -1.0, 1.0, 1.0, // C
+        // Front face
+        -0.5, -0.5, 0.5, // A
+        0.5, -0.5, 0.5,  // B
+        0.5, 0.5, 0.5,   // D
+        -0.5, 0.5, 0.5,  // C
 
-        -1.0, -1.0, -1.0, // E
-        1.0, -1.0, -1.0, // F
-        1.0, 1.0, -1.0, // H
-        -1.0, 1.0, -1.0, // G
+        // Back face
+        -0.5, -0.5, -0.5, // E
+        0.5, -0.5, -0.5,  // F
+        0.5, 0.5, -0.5,   // H
+        -0.5, 0.5, -0.5,  // G
     };
 
-    const GLuint indices[] = {
-        0, 1, 2, 3, // Front face (ABCD)
-        1, 5, 6, 2, // Right face (BFHG)
-        7, 6, 5, 4, // Back face (GHFE)
-        4, 0, 3, 7, // Left face (EADG)
-        3, 2, 6, 7, // Top face (CDHG)
-        4, 5, 1, 0, // Bottom face (FEBA)
+    // Define subdivisions for each face
+    const int subdivisions = 5;
+
+    // Indices for cube outline (edges)
+    const GLuint outlineIndices[] = {
+        0, 1, 2, 3, // Front face
+        0, 3, 7, 4, // Left face
+        4, 5, 6, 7, // Back face
+        1, 5, 6, 2, // Right face
+        3, 2, 6, 7, // Top face
+        0, 1, 5, 4, // Bottom face
     };
-
-    const GLfloat normals[] = {
-        // Front face normals
-        0.0f, 0.0f, 1.0f,   // A
-        0.0f, 0.0f, 1.0f,   // B
-        0.0f, 0.0f, 1.0f,   // C
-        0.0f, 0.0f, 1.0f,   // D
-
-        // Right face normals
-        1.0f, 0.0f, 0.0f,   // B
-        1.0f, 0.0f, 0.0f,   // F
-        1.0f, 0.0f, 0.0f,   // H
-        1.0f, 0.0f, 0.0f,   // C
-
-        // Back face normals
-        0.0f, 0.0f, -1.0f,  // F
-        0.0f, 0.0f, -1.0f,  // E
-        0.0f, 0.0f, -1.0f,  // A
-        0.0f, 0.0f, -1.0f,  // H
-
-        // Left face normals
-        -1.0f, 0.0f, 0.0f,  // E
-        -1.0f, 0.0f, 0.0f,  // A
-        -1.0f, 0.0f, 0.0f,  // D
-        -1.0f, 0.0f, 0.0f,  // G
-
-        // Top face normals
-        0.0f, 1.0f, 0.0f,   // D
-        0.0f, 1.0f, 0.0f,   // C
-        0.0f, 1.0f, 0.0f,   // H
-        0.0f, 1.0f, 0.0f,   // G
-
-        // Bottom face normals
-        0.0f, -1.0f, 0.0f,  // E
-        0.0f, -1.0f, 0.0f,  // F
-        0.0f, -1.0f, 0.0f,  // B
-        0.0f, -1.0f, 0.0f   // A
-    };
-
 
     glColor3f(0.9f, 0.0f, 0.9f); // Лиловый цвет
 
-    glEnable(GL_CULL_FACE);
-    glCullFace(GL_BACK);
-
     glEnableClientState(GL_VERTEX_ARRAY);
-    glEnableClientState(GL_NORMAL_ARRAY);
 
     glVertexPointer(3, GL_FLOAT, 0, vertices);
-    glNormalPointer(GL_FLOAT, 0, normals); // Provide normals to OpenGL
 
-    glDrawElements(GL_QUADS, 24, GL_UNSIGNED_INT, indices);
-    // glDrawArrays(GL_QUADS, 0, 24);
+    glPolygonMode(GL_FRONT_AND_BACK, GL_LINE); // Render in wireframe mode
 
-    glDisableClientState(GL_NORMAL_ARRAY);
+    // Draw cube outline (edges)
+    glDrawElements(GL_LINES, 24, GL_UNSIGNED_INT, outlineIndices);
+
+    // Draw smaller squares on each face
+    for (int i = 0; i < 6; ++i) {
+        glBegin(GL_LINE_LOOP);
+        for (int j = 0; j <= subdivisions; ++j) { // Change loop condition
+            for (int k = 0; k <= subdivisions; ++k) { // Change loop condition
+                float x = -0.5 + (float)j / subdivisions;
+                float y = -0.5 + (float)k / subdivisions;
+                switch (i) {
+                    case 0: glVertex3f(x, y, 0.5); break; // Front face
+                    case 1: glVertex3f(x, y, -0.5); break; // Back face
+                    case 2: glVertex3f(0.5, x, y); break; // Right face
+                    case 3: glVertex3f(-0.5, x, y); break; // Left face
+                    case 4: glVertex3f(x, 0.5, y); break; // Top face
+                    case 5: glVertex3f(x, -0.5, y); break; // Bottom face
+                }
+            }
+        }
+        glEnd();
+    }
+
+    glPolygonMode(GL_FRONT_AND_BACK, GL_FILL); // Restore default fill mode
+
     glDisableClientState(GL_VERTEX_ARRAY);
-
-    glDisable(GL_CULL_FACE);
 }
 
 // TODO: remove redundant comments

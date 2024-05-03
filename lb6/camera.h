@@ -12,5 +12,6 @@ void Camera_Apply();
 void Camera_Rotation(float xAngle, float zAngle);
 void Camera_AutoMoveByMouse(int centerX, int centerY);
 void Camera_MoveDirectional(int forwardMove, int rightMove, float speed);
+void Camera_MoveUpDown(float verticalMove, float speed);
 
 #endif // CAMERA_H_INCLUDED

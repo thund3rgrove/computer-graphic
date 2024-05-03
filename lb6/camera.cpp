@@ -48,3 +48,7 @@ void Camera_MoveDirectional(int forwardMove, int rightMove, float speed) {
         camera.y += cos(ugol) * speed;
     }
 }
+
+void Camera_MoveUpDown(float verticalMove, float speed) {
+    camera.z += verticalMove * speed;
+}
