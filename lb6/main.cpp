@@ -168,14 +168,14 @@ int WINAPI WinMain(HINSTANCE hInstance,
             glPushMatrix();
 
             // Radius of rotation around the cube
-            float radius = 12.0f;
+            float radius = 14.0f;
 
             // // TODO: make theta instead of 0
             // Calculate the position of the bulb relative to the cube's center
             float bulb_x = radius * cos(theta * M_PI / 180); // Convert theta to radians
             float bulb_y = radius * sin(theta * M_PI / 180); // Convert theta to radians
 
-            glTranslatef(2.0f + bulb_x, 2.0f + bulb_y, 8.0f);
+            glTranslatef(2.0f + bulb_x, 2.0f + bulb_y, 12.0f);
 
             // Inner matrix
             glPushMatrix();
@@ -187,7 +187,7 @@ int WINAPI WinMain(HINSTANCE hInstance,
             glRotatef(angle, 0.0f, 0.0f, 1.0f);
 
             // Lean the bulb by 45 degrees around the X-axis
-            glRotatef(45, 1.0f, 0.0f, 0.0f);
+            glRotatef(50, 1.0f, 0.0f, 0.0f);
 
             // Color
             // GLfloat bulb_color[] = {1.f, 0.5f, 0.f}; // Orange color
@@ -514,87 +514,104 @@ void Init_Light() {
     glLightfv(GL_LIGHT0, GL_SPECULAR, light_specular);
     glLightfv(GL_LIGHT0, GL_POSITION, light_position);
     glLightfv(GL_LIGHT0, GL_SPOT_DIRECTION, light_direction);
-    glLightf(GL_LIGHT0, GL_SPOT_CUTOFF, 25.0f);
-    glLightf(GL_LIGHT0, GL_SPOT_EXPONENT, 1.0f);
+    glLightf(GL_LIGHT0, GL_SPOT_CUTOFF, 16.0f);
+    glLightf(GL_LIGHT0, GL_SPOT_EXPONENT, 5.0f);
     glEnable(GL_LIGHT0);
 }
 
 void Init_Material() {
     glEnable(GL_COLOR_MATERIAL);
-    glColorMaterial(GL_FRONT, GL_AMBIENT_AND_DIFFUSE);
-    GLfloat material_ambient[] = {0.5f, 0.5f, 0.5f, 1.0f};
-    GLfloat material_diffuse[] = {0.5f, 0.5f, 0.5f, 1.0f};
-    GLfloat material_specular[] = {0.5f, 0.5f, 0.5f, 1.0f};
-    GLfloat material_shininess[] = {32.0f};
+    glShadeModel(GL_SMOOTH);
+    GLfloat material_ambient[] = { 0.2f, 0.2f, 0.2f, 1.0f };
+    GLfloat material_diffuse[] = { 1.0f, 1.0f, 1.0f, 1.0f };
+    GLfloat material_specular[] = { 1.0f, 1.0f, 1.0f, 1.0f };
+    GLfloat material_shininess[] = { 100.0f };
     glMaterialfv(GL_FRONT, GL_AMBIENT, material_ambient);
     glMaterialfv(GL_FRONT, GL_DIFFUSE, material_diffuse);
     glMaterialfv(GL_FRONT, GL_SPECULAR, material_specular);
-    glMaterialfv(GL_FRONT, GL_SHININESS, material_shininess);
+    glMaterialfv(GL_FRONT, GL_SHININESS, material_shininess);;
 }
 
 void Draw_Cube() {
     // Dimensions (0.5 to half a size)
     const GLfloat vertices[] = {
-        // Front face
-        -0.5, -0.5, 0.5, // A
-        0.5, -0.5, 0.5,  // B
-        0.5, 0.5, 0.5,   // D
-        -0.5, 0.5, 0.5,  // C
+        -1.0, -1.0, 1.0, // A
+        1.0, -1.0, 1.0, // B
+        1.0, 1.0, 1.0, // D
+        -1.0, 1.0, 1.0, // C
 
-        // Back face
-        -0.5, -0.5, -0.5, // E
-        0.5, -0.5, -0.5,  // F
-        0.5, 0.5, -0.5,   // H
-        -0.5, 0.5, -0.5,  // G
+        -1.0, -1.0, -1.0, // E
+        1.0, -1.0, -1.0, // F
+        1.0, 1.0, -1.0, // H
+        -1.0, 1.0, -1.0, // G
     };
 
-    // Define subdivisions for each face
-    const int subdivisions = 5;
+    const GLuint indices[] = {
+        0, 1, 2, // Front face (ABC)
+        2, 3, 0, // Front face (CDA)
 
-    // Indices for cube outline (edges)
-    const GLuint outlineIndices[] = {
-        0, 1, 2, 3, // Front face
-        0, 3, 7, 4, // Left face
-        4, 5, 6, 7, // Back face
-        1, 5, 6, 2, // Right face
-        3, 2, 6, 7, // Top face
-        0, 1, 5, 4, // Bottom face
+        1, 5, 6, // Right face (BFH)
+        6, 2, 1, // Right face (HCD)
+
+        7, 6, 5, // Back face (GHF)
+        5, 4, 7, // Back face (FEG)
+
+        4, 0, 3, // Left face (EAD)
+        3, 7, 4, // Left face (DGE)
+
+        3, 2, 6, // Top face (DCH)
+        6, 7, 3, // Top face (HGD)
+
+        4, 5, 1, // Bottom face (EFB)
+        1, 0, 4 // Bottom face (BAE)
     };
 
-    glColor3f(0.9f, 0.0f, 0.9f); // Лиловый цвет
+    const GLfloat normals[] = {
+        0.0f, 0.0f, -1.0f,
+        0.0f, 0.0f, -1.0f,
+        0.0f, 0.0f, -1.0f,
+        0.0f, 0.0f, -1.0f,
+        0.0f, 0.0f, 1.0f,
+        0.0f, 0.0f, 1.0f,
+        0.0f, 0.0f, 1.0f,
+        0.0f, 0.0f, 1.0f,
+        -1.0f, 0.0f, 0.0f,
+        -1.0f, 0.0f, 0.0f,
+        -1.0f, 0.0f, 0.0f,
+        -1.0f, 0.0f, 0.0f,
+        1.0f, 0.0f, 0.0f,
+        1.0f, 0.0f, 0.0f,
+        1.0f, 0.0f, 0.0f,
+        1.0f, 0.0f, 0.0f,
+        0.0f, -1.0f, 0.0f,
+        0.0f, -1.0f, 0.0f,
+        0.0f, -1.0f, 0.0f,
+        0.0f, -1.0f, 0.0f,
+        0.0f, 1.0f, 0.0f,
+        0.0f, 1.0f, 0.0f,
+        0.0f, 1.0f, 0.0f,
+        0.0f, 1.0f, 0.0f
+    };
+
+    // glColor3f(0.9f, 0.0f, 0.9f); // Лиловый цвет
+    glColor3f(.8f, .8f, .8f);
+
+    glEnable(GL_CULL_FACE);
+    glCullFace(GL_BACK);
 
     glEnableClientState(GL_VERTEX_ARRAY);
+    glEnableClientState(GL_NORMAL_ARRAY); // Enable normal array
 
     glVertexPointer(3, GL_FLOAT, 0, vertices);
+    glNormalPointer(GL_FLOAT, 0, &normals); // Provide normals to OpenGL
 
-    glPolygonMode(GL_FRONT_AND_BACK, GL_LINE); // Render in wireframe mode
+    glDrawElements(GL_TRIANGLES, 36, GL_UNSIGNED_INT, indices);
 
-    // Draw cube outline (edges)
-    glDrawElements(GL_LINES, 24, GL_UNSIGNED_INT, outlineIndices);
-
-    // Draw smaller squares on each face
-    for (int i = 0; i < 6; ++i) {
-        glBegin(GL_LINE_LOOP);
-        for (int j = 0; j <= subdivisions; ++j) { // Change loop condition
-            for (int k = 0; k <= subdivisions; ++k) { // Change loop condition
-                float x = -0.5 + (float)j / subdivisions;
-                float y = -0.5 + (float)k / subdivisions;
-                switch (i) {
-                    case 0: glVertex3f(x, y, 0.5); break; // Front face
-                    case 1: glVertex3f(x, y, -0.5); break; // Back face
-                    case 2: glVertex3f(0.5, x, y); break; // Right face
-                    case 3: glVertex3f(-0.5, x, y); break; // Left face
-                    case 4: glVertex3f(x, 0.5, y); break; // Top face
-                    case 5: glVertex3f(x, -0.5, y); break; // Bottom face
-                }
-            }
-        }
-        glEnd();
-    }
-
-    glPolygonMode(GL_FRONT_AND_BACK, GL_FILL); // Restore default fill mode
-
+    glDisableClientState(GL_COLOR_ARRAY); // Отключаем массив цветов после рисования
+    glDisableClientState(GL_NORMAL_ARRAY); // Disable normal array after drawing
     glDisableClientState(GL_VERTEX_ARRAY);
+
+    glDisable(GL_CULL_FACE);
 }
 
 // TODO: remove redundant comments
@@ -612,7 +629,7 @@ void Draw_Bulb(GLfloat bulb_color[], GLfloat bulb_width, GLfloat bulb_height, GL
     }
 
     // Set the color of the bulb with intensity
-    GLfloat intensity = 20.f;
+    GLfloat intensity = 2.f;
     GLfloat bulb_color_with_intensity[3]; // Array to store color with intensity
     for (int i = 0; i < 3; ++i) {
         bulb_color_with_intensity[i] = bulb_color[i] * intensity;
@@ -633,7 +650,7 @@ void Draw_Bulb(GLfloat bulb_color[], GLfloat bulb_width, GLfloat bulb_height, GL
     glLightf(GL_LIGHT1, GL_SPOT_EXPONENT, 128.0f); // Adjusted exponent for smoother illumination, set to ~5-10
 
     // Set up the light cutoff angle
-    GLfloat light_cutoff = 15.0f; // 10 is also good
+    GLfloat light_cutoff = 15.0f; // 10 and 15 are also good
     glLightf(GL_LIGHT1, GL_SPOT_CUTOFF, light_cutoff);
 
     // Draw the bulb as a simple rectangle
