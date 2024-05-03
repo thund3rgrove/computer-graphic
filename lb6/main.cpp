@@ -303,9 +303,25 @@ void DisableOpenGL(HWND hwnd, HDC hDC, HGLRC hRC) {
 
 void MoveCamera() {
     Camera_MoveDirectional(
-        GetKeyState('W') < 0 ? 1 : GetKeyState('S') < 0 ? -1 : 0,
-        GetKeyState('D') < 0 ? 1 : GetKeyState('A') < 0 ? -1 : 0,
+        GetKeyState('W') < 0
+            ? 1
+            : GetKeyState('S') < 0
+                ? -1
+                : 0,
+        GetKeyState('D') < 0
+                ? 1
+                : GetKeyState('A') < 0
+                    ? -1
+                    : 0,
         0.1);
+    Camera_MoveUpDown(
+        GetKeyState(VK_SPACE) < 0
+            ? 1
+            : GetKeyState(VK_SHIFT) < 0
+                ? -1
+                : 0,
+        0.1
+        );
     Camera_AutoMoveByMouse(400, 400);
 }
 
@@ -531,51 +547,52 @@ void Draw_Cube() {
     };
 
     const GLuint indices[] = {
-        0, 1, 2, // Front face (ABC)
-        2, 3, 0, // Front face (CDA)
-
-        1, 5, 6, // Right face (BFH)
-        6, 2, 1, // Right face (HCD)
-
-        7, 6, 5, // Back face (GHF)
-        5, 4, 7, // Back face (FEG)
-
-        4, 0, 3, // Left face (EAD)
-        3, 7, 4, // Left face (DGE)
-
-        3, 2, 6, // Top face (DCH)
-        6, 7, 3, // Top face (HGD)
-
-        4, 5, 1, // Bottom face (EFB)
-        1, 0, 4, // Bottom face (BAE)
+        0, 1, 2, 3, // Front face (ABCD)
+        1, 5, 6, 2, // Right face (BFHG)
+        7, 6, 5, 4, // Back face (GHFE)
+        4, 0, 3, 7, // Left face (EADG)
+        3, 2, 6, 7, // Top face (CDHG)
+        4, 5, 1, 0, // Bottom face (FEBA)
     };
 
     const GLfloat normals[] = {
-        0.0f, 0.0f, -1.0f,
-        0.0f, 0.0f, -1.0f,
-        0.0f, 0.0f, -1.0f,
-        0.0f, 0.0f, -1.0f,
-        0.0f, 0.0f, 1.0f,
-        0.0f, 0.0f, 1.0f,
-        0.0f, 0.0f, 1.0f,
-        0.0f, 0.0f, 1.0f,
-        -1.0f, 0.0f, 0.0f,
-        -1.0f, 0.0f, 0.0f,
-        -1.0f, 0.0f, 0.0f,
-        -1.0f, 0.0f, 0.0f,
-        1.0f, 0.0f, 0.0f,
-        1.0f, 0.0f, 0.0f,
-        1.0f, 0.0f, 0.0f,
-        1.0f, 0.0f, 0.0f,
-        0.0f, -1.0f, 0.0f,
-        0.0f, -1.0f, 0.0f,
-        0.0f, -1.0f, 0.0f,
-        0.0f, -1.0f, 0.0f,
-        0.0f, 1.0f, 0.0f,
-        0.0f, 1.0f, 0.0f,
-        0.0f, 1.0f, 0.0f,
-        0.0f, 1.0f, 0.0f
+        // Front face normals
+        0.0f, 0.0f, 1.0f,   // A
+        0.0f, 0.0f, 1.0f,   // B
+        0.0f, 0.0f, 1.0f,   // C
+        0.0f, 0.0f, 1.0f,   // D
+
+        // Right face normals
+        1.0f, 0.0f, 0.0f,   // B
+        1.0f, 0.0f, 0.0f,   // F
+        1.0f, 0.0f, 0.0f,   // H
+        1.0f, 0.0f, 0.0f,   // C
+
+        // Back face normals
+        0.0f, 0.0f, -1.0f,  // F
+        0.0f, 0.0f, -1.0f,  // E
+        0.0f, 0.0f, -1.0f,  // A
+        0.0f, 0.0f, -1.0f,  // H
+
+        // Left face normals
+        -1.0f, 0.0f, 0.0f,  // E
+        -1.0f, 0.0f, 0.0f,  // A
+        -1.0f, 0.0f, 0.0f,  // D
+        -1.0f, 0.0f, 0.0f,  // G
+
+        // Top face normals
+        0.0f, 1.0f, 0.0f,   // D
+        0.0f, 1.0f, 0.0f,   // C
+        0.0f, 1.0f, 0.0f,   // H
+        0.0f, 1.0f, 0.0f,   // G
+
+        // Bottom face normals
+        0.0f, -1.0f, 0.0f,  // E
+        0.0f, -1.0f, 0.0f,  // F
+        0.0f, -1.0f, 0.0f,  // B
+        0.0f, -1.0f, 0.0f   // A
     };
+
 
     glColor3f(0.9f, 0.0f, 0.9f); // Лиловый цвет
 
@@ -588,7 +605,7 @@ void Draw_Cube() {
     glVertexPointer(3, GL_FLOAT, 0, vertices);
     glNormalPointer(GL_FLOAT, 0, normals); // Provide normals to OpenGL
 
-    glDrawElements(GL_TRIANGLES, 36, GL_UNSIGNED_INT, indices);
+    glDrawElements(GL_QUADS, 24, GL_UNSIGNED_INT, indices);
     // glDrawArrays(GL_QUADS, 0, 24);
 
     glDisableClientState(GL_NORMAL_ARRAY);
