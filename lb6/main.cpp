@@ -71,7 +71,7 @@ int WINAPI WinMain(HINSTANCE hInstance,
     /* create main window */
     hwnd = CreateWindowEx(0,
                           "ComputerGraphic",
-                          "Lab 5",
+                          "Lab 6",
                           WS_OVERLAPPEDWINDOW,
                           CW_USEDEFAULT,
                           CW_USEDEFAULT,
@@ -600,15 +600,14 @@ void Draw_Cube() {
     glCullFace(GL_BACK);
 
     glEnableClientState(GL_VERTEX_ARRAY);
-    glEnableClientState(GL_NORMAL_ARRAY); // Enable normal array
+    glEnableClientState(GL_NORMAL_ARRAY);
 
     glVertexPointer(3, GL_FLOAT, 0, vertices);
     glNormalPointer(GL_FLOAT, 0, &normals); // Provide normals to OpenGL
 
     glDrawElements(GL_TRIANGLES, 36, GL_UNSIGNED_INT, indices);
 
-    glDisableClientState(GL_COLOR_ARRAY); // Отключаем массив цветов после рисования
-    glDisableClientState(GL_NORMAL_ARRAY); // Disable normal array after drawing
+    glDisableClientState(GL_NORMAL_ARRAY);
     glDisableClientState(GL_VERTEX_ARRAY);
 
     glDisable(GL_CULL_FACE);
@@ -647,7 +646,7 @@ void Draw_Bulb(GLfloat bulb_color[], GLfloat bulb_width, GLfloat bulb_height, GL
     // Set up the light direction
     GLfloat light_direction[] = {0.0f, 0.0f, -1.0f}; // Pointing towards the cube
     glLightfv(GL_LIGHT1, GL_SPOT_DIRECTION, light_direction);
-    glLightf(GL_LIGHT1, GL_SPOT_EXPONENT, 128.0f); // Adjusted exponent for smoother illumination, set to ~5-10
+    glLightf(GL_LIGHT1, GL_SPOT_EXPONENT, 128.0f); // Adjusted exponent for smoother illumination, set to ~5-10 for better perfomance
 
     // Set up the light cutoff angle
     GLfloat light_cutoff = 15.0f; // 10 and 15 are also good
