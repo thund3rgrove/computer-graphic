@@ -519,18 +519,21 @@ void DrawFloor(float width, float length, float tileSize) {
 void Init_Light() {
     glEnable(GL_LIGHTING);
     glShadeModel(GL_SMOOTH);
-    GLfloat light_ambient[] = {0.2f, 0.2f, 0.2f, 1.0f};
-    GLfloat light_diffuse[] = {1.0f, 1.0f, 1.0f, 1.0f};
-    GLfloat light_specular[] = {1.0f, 1.0f, 1.0f, 1.0f};
+
+    GLfloat light_ambient[] = {0.8f, 0.8f, 0.8f, 1.0f};
+    GLfloat light_diffuse[] = {.2f, .2f, .2f, 1.0f};
+    GLfloat light_specular[] = {.2f, .2f, .2f, 1.0f};
+
     GLfloat light_position[] = {0.0f, 0.0f, 0.0f, 1.0f}; // Torch position (initialized at the camera)
-    GLfloat light_direction[] = {0.0f, 0.0f, -1.0f}; // Torch direction (same as camera direction)
+    // GLfloat light_direction[] = {0.0f, 0.0f, -1.0f}; // Torch direction (same as camera direction)
+
     glLightfv(GL_LIGHT0, GL_AMBIENT, light_ambient);
     glLightfv(GL_LIGHT0, GL_DIFFUSE, light_diffuse);
     glLightfv(GL_LIGHT0, GL_SPECULAR, light_specular);
     glLightfv(GL_LIGHT0, GL_POSITION, light_position);
-    glLightfv(GL_LIGHT0, GL_SPOT_DIRECTION, light_direction);
-    glLightf(GL_LIGHT0, GL_SPOT_CUTOFF, 16.0f);
-    glLightf(GL_LIGHT0, GL_SPOT_EXPONENT, 5.0f);
+    // glLightfv(GL_LIGHT0, GL_SPOT_DIRECTION, light_direction);
+    // glLightf(GL_LIGHT0, GL_SPOT_CUTOFF, 16.0f);
+    // glLightf(GL_LIGHT0, GL_SPOT_EXPONENT, 5.0f);
     glEnable(GL_LIGHT0);
 }
 
@@ -773,25 +776,30 @@ void DrawPrism() {
     normals.push_back(-1); // nz (bottom face normal)
 
 
-    // Draw the prism
-    glColor3f(100/255.f, 149/255.f, 237/255.f);
+        // Draw the faces of the prism
+    glColor3f(100/255.0f, 149/255.0f, 237/255.0f); // Cornflower Blue
+    glBegin(GL_TRIANGLES);
+    for (size_t i = 0; i < indices.size(); i += 3) {
+        glVertex3f(vertices[indices[i] * 3], vertices[indices[i] * 3 + 1], vertices[indices[i] * 3 + 2]);
+        glVertex3f(vertices[indices[i+1] * 3], vertices[indices[i+1] * 3 + 1], vertices[indices[i+1] * 3 + 2]);
+        glVertex3f(vertices[indices[i+2] * 3], vertices[indices[i+2] * 3 + 1], vertices[indices[i+2] * 3 + 2]);
+    }
+    glEnd();
 
-    // TODO: might be useless if using depth test
-    // glEnable(GL_CULL_FACE);
-    // glCullFace(GL_BACK);
+    // Draw the edges in green
+    glColor3f(0.0f, 1.0f, 0.0f); // Green
+    glLineWidth(2.0f); // Set line width for edges
+    glBegin(GL_LINES);
+    for (size_t i = 0; i < indices.size(); i += 3) {
+        glVertex3f(vertices[indices[i] * 3], vertices[indices[i] * 3 + 1], vertices[indices[i] * 3 + 2]);
+        glVertex3f(vertices[indices[i+1] * 3], vertices[indices[i+1] * 3 + 1], vertices[indices[i+1] * 3 + 2]);
 
-    glEnableClientState(GL_VERTEX_ARRAY);
-    glEnableClientState(GL_NORMAL_ARRAY);
+        glVertex3f(vertices[indices[i+1] * 3], vertices[indices[i+1] * 3 + 1], vertices[indices[i+1] * 3 + 2]);
+        glVertex3f(vertices[indices[i+2] * 3], vertices[indices[i+2] * 3 + 1], vertices[indices[i+2] * 3 + 2]);
 
-    glVertexPointer(3, GL_FLOAT, 0, &vertices[0]);
-    glNormalPointer(GL_FLOAT, 0, &normals[0]);
-
-    glDrawElements(GL_TRIANGLES, indices.size(), GL_UNSIGNED_INT, &indices[0]);
-
-    glDisableClientState(GL_NORMAL_ARRAY);
-    glDisableClientState(GL_VERTEX_ARRAY);
-
-    // glDisable(GL_CULL_FACE);
-
+        glVertex3f(vertices[indices[i+2] * 3], vertices[indices[i+2] * 3 + 1], vertices[indices[i+2] * 3 + 2]);
+        glVertex3f(vertices[indices[i] * 3], vertices[indices[i] * 3 + 1], vertices[indices[i] * 3 + 2]);
+    }
+    glEnd();
 }
 
