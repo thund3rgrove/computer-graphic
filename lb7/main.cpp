@@ -1,6 +1,7 @@
 #include <cmath>
 #include <iostream>
 #include <cstdio>
+#include <functional>
 #include <vector>
 #include <windows.h>
 #include <gl/gl.h>
@@ -42,7 +43,11 @@ void Draw_Cube();
 void Draw_Bulb(GLfloat bulb_color[] = nullptr, GLfloat bulb_width = 2.0f, GLfloat bulb_height = 2.0f,
                GLfloat bulb_position[] = nullptr);
 
-void DrawPrism(float alpha);
+void DrawThirdPrism(float alpha);
+
+void DrawSecondPrism(float alpha);
+
+void DrawObjectsInCircle(float radius, int numObjects, const std::function<void(float)>& drawFunction);
 
 int WINAPI WinMain(HINSTANCE hInstance,
                    HINSTANCE hPrevInstance,
@@ -204,26 +209,19 @@ int WINAPI WinMain(HINSTANCE hInstance,
             //
 
             // 7
-            float prismRadius = 5.f;
-
             glPushMatrix();
             glTranslatef(10.f, 10.f, 1.f);
-            for (float alpha = 0.1f; alpha < 1.1f; alpha += 0.1f) {
-                float prismAngle = alpha * 2.f * M_PI;
-                float prismX = prismRadius * cos(prismAngle);
-                float prismY = prismRadius * sin(prismAngle);
+            DrawObjectsInCircle(5.f, 10, [](float alpha) {
+                            DrawThirdPrism(alpha);
+                        });
+            glPopMatrix();
 
-                glPushMatrix();
-
-                glTranslatef(prismX, prismY, 0.f);
-
-                float prismRotationAngle = atan2(-prismY, -prismX) * 180.f / M_PI;
-                glRotatef(prismRotationAngle, 0.f, 0.f, 1.f);
-
-                DrawPrism(alpha);
-
-                glPopMatrix();
-            }
+            glPushMatrix();
+            glTranslatef(25.f, 10.f, 1.f);
+            glScalef(-1.f, 1.f, 1.f); // Mirror horizontally
+            DrawObjectsInCircle(5.f, 10, [](float alpha) {
+                DrawSecondPrism(alpha);
+            });
             glPopMatrix();
 
 
@@ -536,11 +534,11 @@ void InitLight() {
 }
 
 void DrawProjector() {
-    GLfloat light_ambient[] = {1.0f, 1.0f, 1.0f, 1.0f};
-    GLfloat light_diffuse[] = {1.0f, 1.0f, 1.0f, 1.0f};
-    GLfloat light_specular[] = {1.0f, 1.0f, 1.0f, 1.0f};
+    GLfloat light_ambient[] = {.5f, .5f, .5f, 1.0f};
+    GLfloat light_diffuse[] = {.5f, .5f, .5f, 1.0f};
+    GLfloat light_specular[] = {.5f, .5f, .5f, 1.0f};
 
-    GLfloat light_position[] = {10.0f, 10.0f, 10.0f, 1.0f};
+    GLfloat light_position[] = {13.f, 10.0f, 15.0f, 1.0f};
     GLfloat light_direction[] = {0.0f, 0.0f, -1.0f}; // Pointing straight down
     GLfloat light_cutoff = 90.0f; // 10 and 15 are also good
 
@@ -549,8 +547,8 @@ void DrawProjector() {
     glLightfv(GL_LIGHT0, GL_SPECULAR, light_specular);
     glLightfv(GL_LIGHT0, GL_POSITION, light_position);
     glLightfv(GL_LIGHT0, GL_SPOT_DIRECTION, light_direction);
-    glLightf(GL_LIGHT0, GL_SPOT_EXPONENT, 5.0f);
     // Exponent for smoother illumination, set to ~5-10 for better perfomance
+    glLightf(GL_LIGHT0, GL_SPOT_EXPONENT, 5.0f);
     glLightf(GL_LIGHT0, GL_SPOT_CUTOFF, light_cutoff);
 
     glEnable(GL_LIGHT0);
@@ -707,7 +705,7 @@ void Draw_Bulb(GLfloat bulb_color[], GLfloat bulb_width, GLfloat bulb_height, GL
 }
 
 // 7
-void DrawPrism(float alpha) {
+void DrawThirdPrism(float alpha) {
     const int numVerticesPerSection = 7;
     const int numSections = 3; // top, middle, bottom
     const GLfloat radius = 1.5f;
@@ -774,13 +772,14 @@ void DrawPrism(float alpha) {
         indices.push_back((j + 1) % numVerticesPerSection);
     }
 
-    // Calculate normals
+    // Use vertex values as normals
     for (int i = 0; i < numSections; i++) {
         for (int j = 0; j < numVerticesPerSection; j++) {
-            GLfloat angle = j * 2 * M_PI / numVerticesPerSection;
-            GLfloat nx = cos(angle);
-            GLfloat ny = sin(angle);
-            GLfloat nz = 0.0f;
+            GLfloat x = vertices[(i * numVerticesPerSection + j) * 3 + 0];
+            GLfloat y = vertices[(i * numVerticesPerSection + j) * 3 + 1];
+            GLfloat nx = x;
+            GLfloat ny = y;
+            GLfloat nz = 0.0f; // Since the sides are vertical
             normals[(i * numVerticesPerSection + j) * 3 + 0] = nx;
             normals[(i * numVerticesPerSection + j) * 3 + 1] = ny;
             normals[(i * numVerticesPerSection + j) * 3 + 2] = nz;
@@ -831,4 +830,144 @@ void DrawPrism(float alpha) {
 
     // Disable line offset after drawing lines
     glDisable(GL_POLYGON_OFFSET_LINE);
+}
+
+void DrawSecondPrism(float alpha) {
+    const int numVerticesPerSection = 7;
+    const int numSections = 2; // bottom and top
+    const GLfloat radius = 1.5f;
+    const GLfloat height = 2.0f;
+
+    std::vector<GLfloat> vertices(numVerticesPerSection * numSections * 3);
+    std::vector<GLuint> indices;
+    std::vector<GLfloat> normals(numVerticesPerSection * numSections * 3);
+
+    // Calculate vertices
+    for (int i = 0; i < numSections; i++) {
+        GLfloat z = i * height / (numSections - 1);
+        GLfloat currentRadius = (i == 1) ? radius * 0.5 : radius; // Half radius at the top
+
+        for (int j = 0; j < numVerticesPerSection; j++) {
+            GLfloat angle = j * 2 * M_PI / numVerticesPerSection;
+            GLfloat x = currentRadius * cos(angle);
+            GLfloat y = currentRadius * sin(angle);
+            vertices[(i * numVerticesPerSection + j) * 3 + 0] = x;
+            vertices[(i * numVerticesPerSection + j) * 3 + 1] = y;
+            vertices[(i * numVerticesPerSection + j) * 3 + 2] = z;
+        }
+    }
+
+    // Calculate indices for the sides
+    for (int i = 0; i < numSections - 1; i++) {
+        for (int j = 0; j < numVerticesPerSection; j++) {
+            GLuint idx1 = i * numVerticesPerSection + j;
+            GLuint idx2 = (j < numVerticesPerSection - 1) ? idx1 + 1 : i * numVerticesPerSection;
+            GLuint idx3 = (i + 1) * numVerticesPerSection + j;
+            GLuint idx4 = (j < numVerticesPerSection - 1) ? idx3 + 1 : (i + 1) * numVerticesPerSection;
+            indices.push_back(idx1);
+            indices.push_back(idx2);
+            indices.push_back(idx3);
+            indices.push_back(idx2);
+            indices.push_back(idx4);
+            indices.push_back(idx3);
+        }
+    }
+
+    // Calculate indices for the top and bottom
+    int topCenterIndex = vertices.size() / 3;
+    vertices.push_back(0); // x
+    vertices.push_back(0); // y
+    vertices.push_back(height); // z (top of the prism)
+    for (int j = 0; j < numVerticesPerSection; j++) {
+        indices.push_back(topCenterIndex);
+        indices.push_back((numSections - 1) * numVerticesPerSection + j);
+        indices.push_back((numSections - 1) * numVerticesPerSection + ((j + 1) % numVerticesPerSection));
+    }
+
+    int bottomCenterIndex = vertices.size() / 3;
+    vertices.push_back(0); // x
+    vertices.push_back(0); // y
+    vertices.push_back(0); // z (bottom of the prism)
+    for (int j = 0; j < numVerticesPerSection; j++) {
+        indices.push_back(bottomCenterIndex);
+        indices.push_back(j);
+        indices.push_back((j + 1) % numVerticesPerSection);
+    }
+
+    // Use vertex values as normals
+    for (int i = 0; i < numSections; i++) {
+        for (int j = 0; j < numVerticesPerSection; j++) {
+            GLfloat x = vertices[(i * numVerticesPerSection + j) * 3 + 0];
+            GLfloat y = vertices[(i * numVerticesPerSection + j) * 3 + 1];
+            GLfloat nx = x;
+            GLfloat ny = y;
+            GLfloat nz = 0.0f; // Since the sides are vertical
+            normals[(i * numVerticesPerSection + j) * 3 + 0] = nx;
+            normals[(i * numVerticesPerSection + j) * 3 + 1] = ny;
+            normals[(i * numVerticesPerSection + j) * 3 + 2] = nz;
+        }
+    }
+
+    // Normals for the top center, pointing up
+    normals.push_back(0); // nx
+    normals.push_back(0); // ny
+    normals.push_back(1); // nz (top face normal)
+
+    // Normals for the bottom center, pointing down
+    normals.push_back(0); // nx
+    normals.push_back(0); // ny
+    normals.push_back(-1); // nz (bottom face normal)
+
+    // Draw the faces of the prism
+    glColor4f(100 / 255.0f, 149 / 255.0f, 237 / 255.0f, alpha); // Cornflower Blue
+    glBegin(GL_TRIANGLES);
+    for (size_t i = 0; i < indices.size(); i += 3) {
+        glVertex3f(vertices[indices[i] * 3], vertices[indices[i] * 3 + 1], vertices[indices[i] * 3 + 2]);
+        glVertex3f(vertices[indices[i + 1] * 3], vertices[indices[i + 1] * 3 + 1], vertices[indices[i + 1] * 3 + 2]);
+        glVertex3f(vertices[indices[i + 2] * 3], vertices[indices[i + 2] * 3 + 1], vertices[indices[i + 2] * 3 + 2]);
+    }
+    glEnd();
+
+
+    // Enable polygon offset fill to offset filled polygons for depth testing
+    glEnable(GL_POLYGON_OFFSET_FILL);
+    glPolygonOffset(1.0f, 1.0f); // Offset, so the outline doesnt clip the face
+
+    // Draw the outline
+    glColor4f(0.0f, 1.0f, 0.0f, alpha); // Green
+    glLineWidth(2.0f);
+    glBegin(GL_LINES);
+    for (size_t i = 0; i < indices.size(); i += 3) {
+        glVertex3f(vertices[indices[i] * 3], vertices[indices[i] * 3 + 1], vertices[indices[i] * 3 + 2]);
+        glVertex3f(vertices[indices[i + 1] * 3], vertices[indices[i + 1] * 3 + 1], vertices[indices[i + 1] * 3 + 2]);
+
+        glVertex3f(vertices[indices[i + 1] * 3], vertices[indices[i + 1] * 3 + 1], vertices[indices[i + 1] * 3 + 2]);
+        glVertex3f(vertices[indices[i + 2] * 3], vertices[indices[i + 2] * 3 + 1], vertices[indices[i + 2] * 3 + 2]);
+
+        glVertex3f(vertices[indices[i + 2] * 3], vertices[indices[i + 2] * 3 + 1], vertices[indices[i + 2] * 3 + 2]);
+        glVertex3f(vertices[indices[i] * 3], vertices[indices[i] * 3 + 1], vertices[indices[i] * 3 + 2]);
+    }
+    glEnd();
+
+    // Disable line offset after drawing lines
+    glDisable(GL_POLYGON_OFFSET_LINE);
+}
+
+void DrawObjectsInCircle(float radius, int numObjects, const std::function<void(float)>& drawFunction) {
+    for (int i = 0; i < numObjects; ++i) {
+        float alpha = (i + 1) * 1.0f / numObjects;
+        float prismAngle = alpha * 2.f * M_PI;
+        float prismX = radius * cos(prismAngle);
+        float prismY = radius * sin(prismAngle);
+
+        glPushMatrix();
+        glTranslatef(prismX, prismY, 0.f);
+
+        float prismRotationAngle = atan2(-prismY, -prismX) * 180.f / M_PI;
+        glRotatef(prismRotationAngle, 0.f, 0.f, 1.f);
+
+        drawFunction(alpha); // Call the passed function
+
+        glPopMatrix();
+    }
 }
