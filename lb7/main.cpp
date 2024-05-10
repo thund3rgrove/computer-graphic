@@ -19,7 +19,9 @@ void DisableOpenGL(HWND, HDC, HGLRC);
 
 void WndResize(int x, int y);
 
-void Init_Light();
+void DrawProjector();
+
+void InitLight();
 
 void Init_Material();
 
@@ -40,7 +42,7 @@ void Draw_Cube();
 void Draw_Bulb(GLfloat bulb_color[] = nullptr, GLfloat bulb_width = 2.0f, GLfloat bulb_height = 2.0f,
                GLfloat bulb_position[] = nullptr);
 
-void DrawPrism();
+void DrawPrism(float alpha);
 
 int WINAPI WinMain(HINSTANCE hInstance,
                    HINSTANCE hPrevInstance,
@@ -100,7 +102,7 @@ int WINAPI WinMain(HINSTANCE hInstance,
     /* enable OpenGL for the window */
     EnableOpenGL(hwnd, &hDC, &hRC);
 
-    Init_Light();
+    InitLight();
     Init_Material();
 
     /* program main loop */
@@ -171,6 +173,8 @@ int WINAPI WinMain(HINSTANCE hInstance,
             // Outer matrix
             glPushMatrix();
 
+            DrawProjector();
+
             // Radius of rotation around the cube
             float radius = 14.0f;
 
@@ -185,10 +189,10 @@ int WINAPI WinMain(HINSTANCE hInstance,
             glPushMatrix();
 
             // Angle between the x-axis and the line connecting the bulb to the center of the cube
-            float angle = atan2(bulb_y, bulb_x) * 180 / M_PI + 90;
+            float bulbAngle = atan2(bulb_y, bulb_x) * 180 / M_PI + 90;
 
             // Rotate the bulb around its own axis
-            glRotatef(angle, 0.0f, 0.0f, 1.0f);
+            glRotatef(bulbAngle, 0.0f, 0.0f, 1.0f);
 
             // Lean the bulb by 45 degrees around the X-axis
             glRotatef(50, 1.0f, 0.0f, 0.0f);
@@ -208,10 +212,26 @@ int WINAPI WinMain(HINSTANCE hInstance,
             //
 
             // 7
+            float prismRadius = 5.f;
 
             glPushMatrix();
-            glTranslatef(0.f, 0.f, 3.f);
-            DrawPrism();
+            glTranslatef(10.f, 10.f, 1.f);
+            for (float alpha = 0.1f; alpha < 1.1f; alpha += 0.1f) {
+                float prismAngle = alpha * 2.f * M_PI;
+                float prismX = prismRadius * cos(prismAngle);
+                float prismY = prismRadius * sin(prismAngle);
+
+                glPushMatrix();
+
+                glTranslatef(prismX, prismY, 0.f);
+
+                float prismRotationAngle = atan2(-prismY, -prismX) * 180.f / M_PI;
+                glRotatef(prismRotationAngle, 0.f, 0.f, 1.f);
+
+                DrawPrism(alpha);
+
+                glPopMatrix();
+            }
             glPopMatrix();
 
 
@@ -306,9 +326,11 @@ void EnableOpenGL(HWND hwnd, HDC *hDC, HGLRC *hRC) {
     wglMakeCurrent(*hDC, *hRC);
 
     glEnable(GL_DEPTH_TEST);
+    glDepthMask(GL_TRUE);
 }
 
 void DisableOpenGL(HWND hwnd, HDC hDC, HGLRC hRC) {
+    glDepthMask(FALSE);
     glDisable(GL_DEPTH_TEST);
 
     wglMakeCurrent(NULL, NULL);
@@ -516,24 +538,28 @@ void DrawFloor(float width, float length, float tileSize) {
 
 // 6
 
-void Init_Light() {
+void InitLight() {
     glEnable(GL_LIGHTING);
     glShadeModel(GL_SMOOTH);
+}
 
-    GLfloat light_ambient[] = {0.8f, 0.8f, 0.8f, 1.0f};
-    GLfloat light_diffuse[] = {.2f, .2f, .2f, 1.0f};
-    GLfloat light_specular[] = {.2f, .2f, .2f, 1.0f};
+void DrawProjector() {
+    GLfloat light_ambient[] = {1.0f, 1.0f, 1.0f, 1.0f};
+    GLfloat light_diffuse[] = {1.0f, 1.0f, 1.0f, 1.0f};
+    GLfloat light_specular[] = {1.0f, 1.0f, 1.0f, 1.0f};
 
-    GLfloat light_position[] = {0.0f, 0.0f, 0.0f, 1.0f}; // Torch position (initialized at the camera)
-    // GLfloat light_direction[] = {0.0f, 0.0f, -1.0f}; // Torch direction (same as camera direction)
+    GLfloat light_position[] = {10.0f, 10.0f, 10.0f, 1.0f};
+    GLfloat light_direction[] = {0.0f, 0.0f, -1.0f}; // Pointing straight down
+    GLfloat light_cutoff = 90.0f; // 10 and 15 are also good
 
     glLightfv(GL_LIGHT0, GL_AMBIENT, light_ambient);
     glLightfv(GL_LIGHT0, GL_DIFFUSE, light_diffuse);
     glLightfv(GL_LIGHT0, GL_SPECULAR, light_specular);
     glLightfv(GL_LIGHT0, GL_POSITION, light_position);
-    // glLightfv(GL_LIGHT0, GL_SPOT_DIRECTION, light_direction);
-    // glLightf(GL_LIGHT0, GL_SPOT_CUTOFF, 16.0f);
-    // glLightf(GL_LIGHT0, GL_SPOT_EXPONENT, 5.0f);
+    glLightfv(GL_LIGHT0, GL_SPOT_DIRECTION, light_direction);
+    glLightf(GL_LIGHT0, GL_SPOT_EXPONENT, 5.0f); // Exponent for smoother illumination, set to ~5-10 for better perfomance
+    glLightf(GL_LIGHT0, GL_SPOT_CUTOFF, light_cutoff);
+
     glEnable(GL_LIGHT0);
 }
 
@@ -687,10 +713,10 @@ void Draw_Bulb(GLfloat bulb_color[], GLfloat bulb_width, GLfloat bulb_height, GL
 }
 
 // 7
-void DrawPrism() {
+void DrawPrism(float alpha) {
     const int numVerticesPerSection = 7;
     const int numSections = 3; // top, middle, bottom
-    const GLfloat radius = 1.0f;
+    const GLfloat radius = 1.5f;
     const GLfloat height = 2.0f;
 
     // Allocate memory
@@ -776,8 +802,8 @@ void DrawPrism() {
     normals.push_back(-1); // nz (bottom face normal)
 
 
-        // Draw the faces of the prism
-    glColor3f(100/255.0f, 149/255.0f, 237/255.0f); // Cornflower Blue
+    // Draw the faces of the prism
+    glColor4f(100/255.0f, 149/255.0f, 237/255.0f, alpha); // Cornflower Blue
     glBegin(GL_TRIANGLES);
     for (size_t i = 0; i < indices.size(); i += 3) {
         glVertex3f(vertices[indices[i] * 3], vertices[indices[i] * 3 + 1], vertices[indices[i] * 3 + 2]);
@@ -786,8 +812,13 @@ void DrawPrism() {
     }
     glEnd();
 
+
+    // Enable polygon offset fill to offset filled polygons for depth testing
+    glEnable(GL_POLYGON_OFFSET_FILL);
+    glPolygonOffset(1.0f, 1.0f); // Offset parameters
+
     // Draw the edges in green
-    glColor3f(0.0f, 1.0f, 0.0f); // Green
+    glColor4f(0.0f, 1.0f, 0.0f, alpha); // Green
     glLineWidth(2.0f); // Set line width for edges
     glBegin(GL_LINES);
     for (size_t i = 0; i < indices.size(); i += 3) {
@@ -801,5 +832,7 @@ void DrawPrism() {
         glVertex3f(vertices[indices[i] * 3], vertices[indices[i] * 3 + 1], vertices[indices[i] * 3 + 2]);
     }
     glEnd();
-}
 
+    // Disable line offset after drawing lines
+    glDisable(GL_POLYGON_OFFSET_LINE);
+}
