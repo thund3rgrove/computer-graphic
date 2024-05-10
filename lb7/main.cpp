@@ -117,9 +117,6 @@ int WINAPI WinMain(HINSTANCE hInstance,
                 DispatchMessage(&msg);
             }
         } else {
-            // if (isPlaying) {
-            // if (isPlaying) ShowCursor(FALSE);
-            // else ShowCursor(TRUE);
             // Enable OpenGL states and clear buffers
             glClearColor((float) 255.f / 255.f, (float) 254.f / 255.f, (float) 200.f / 255.f, 1.0f);
             // Set background to nice slight yellow :) (255, 254, 200 rgb)
@@ -156,11 +153,6 @@ int WINAPI WinMain(HINSTANCE hInstance,
             glPushMatrix();
             DrawAxes(windowWidth, windowHeight);
             glPopMatrix();
-
-            // Render chess board
-            // glPushMatrix();
-            // DrawChessBoard(5.0f, 3.0f, 8); // Draw the chessboard starting from coordinates (5, 3)
-            // glPopMatrix();
 
             glPushMatrix();
             glTranslatef(2.f, 2.f, 2.f);
@@ -201,7 +193,7 @@ int WINAPI WinMain(HINSTANCE hInstance,
             // GLfloat bulb_color[] = {1.f, 0.5f, 0.f}; // Orange color
 
             // Draw the bulb
-            Draw_Bulb(new GLfloat[]{1.f, .5f, .5f, .5f}, (GLfloat)3.f, (GLfloat)3.f);
+            Draw_Bulb(new GLfloat[]{1.f, .5f, .5f, .5f}, (GLfloat) 3.f, (GLfloat) 3.f);
 
             // End Inner matrix
             glPopMatrix();
@@ -343,22 +335,22 @@ void MoveCamera() {
         GetKeyState('W') < 0
             ? 1
             : GetKeyState('S') < 0
-                ? -1
-                : 0,
+                  ? -1
+                  : 0,
         GetKeyState('D') < 0
-                ? 1
-                : GetKeyState('A') < 0
-                    ? -1
-                    : 0,
+            ? 1
+            : GetKeyState('A') < 0
+                  ? -1
+                  : 0,
         0.1);
     Camera_MoveUpDown(
         GetKeyState(VK_SPACE) < 0
             ? 1
             : GetKeyState(VK_SHIFT) < 0
-                ? -1
-                : 0,
+                  ? -1
+                  : 0,
         0.1
-        );
+    );
     Camera_AutoMoveByMouse(400, 400);
 }
 
@@ -557,7 +549,8 @@ void DrawProjector() {
     glLightfv(GL_LIGHT0, GL_SPECULAR, light_specular);
     glLightfv(GL_LIGHT0, GL_POSITION, light_position);
     glLightfv(GL_LIGHT0, GL_SPOT_DIRECTION, light_direction);
-    glLightf(GL_LIGHT0, GL_SPOT_EXPONENT, 5.0f); // Exponent for smoother illumination, set to ~5-10 for better perfomance
+    glLightf(GL_LIGHT0, GL_SPOT_EXPONENT, 5.0f);
+    // Exponent for smoother illumination, set to ~5-10 for better perfomance
     glLightf(GL_LIGHT0, GL_SPOT_CUTOFF, light_cutoff);
 
     glEnable(GL_LIGHT0);
@@ -566,10 +559,10 @@ void DrawProjector() {
 void Init_Material() {
     glEnable(GL_COLOR_MATERIAL);
     glShadeModel(GL_SMOOTH);
-    GLfloat material_ambient[] = { 0.2f, 0.2f, 0.2f, .5f };
-    GLfloat material_diffuse[] = { 1.0f, 1.0f, 1.0f, .5f };
-    GLfloat material_specular[] = { 1.0f, 1.0f, 1.0f, 1.0f };
-    GLfloat material_shininess[] = { 100.0f };
+    GLfloat material_ambient[] = {0.2f, 0.2f, 0.2f, .5f};
+    GLfloat material_diffuse[] = {1.0f, 1.0f, 1.0f, .5f};
+    GLfloat material_specular[] = {1.0f, 1.0f, 1.0f, 1.0f};
+    GLfloat material_shininess[] = {100.0f};
     glMaterialfv(GL_FRONT, GL_AMBIENT, material_ambient);
     glMaterialfv(GL_FRONT, GL_DIFFUSE, material_diffuse);
     glMaterialfv(GL_FRONT, GL_SPECULAR, material_specular);
@@ -693,7 +686,8 @@ void Draw_Bulb(GLfloat bulb_color[], GLfloat bulb_width, GLfloat bulb_height, GL
     // Set up the light direction
     GLfloat light_direction[] = {0.0f, 0.0f, -1.0f}; // Pointing towards the cube
     glLightfv(GL_LIGHT1, GL_SPOT_DIRECTION, light_direction);
-    glLightf(GL_LIGHT1, GL_SPOT_EXPONENT, 128.0f); // Adjusted exponent for smoother illumination, set to ~5-10 for better perfomance
+    glLightf(GL_LIGHT1, GL_SPOT_EXPONENT, 128.0f);
+    // Adjusted exponent for smoother illumination, set to ~5-10 for better perfomance
 
     // Set up the light cutoff angle
     GLfloat light_cutoff = 15.0f; // 10 and 15 are also good
@@ -729,6 +723,7 @@ void DrawPrism(float alpha) {
         GLfloat z = i * height / (numSections - 1);
         GLfloat currentRadius = radius;
 
+        // If middle, make its radius half a size
         if (i == 1) currentRadius *= 0.5;
 
         for (int j = 0; j < numVerticesPerSection; j++) {
@@ -757,7 +752,7 @@ void DrawPrism(float alpha) {
         }
     }
 
-    // Calculate indices for the top face
+    // Calculate indices for the top
     int topCenterIndex = vertices.size() / 3; // Index of the virtual center vertex for the top
     vertices.push_back(0); // x
     vertices.push_back(0); // y
@@ -768,7 +763,7 @@ void DrawPrism(float alpha) {
         indices.push_back((numSections - 1) * numVerticesPerSection + ((j + 1) % numVerticesPerSection));
     }
 
-    // Calculate indices for the bottom face
+    // Calculate indices for the bottom
     int bottomCenterIndex = vertices.size() / 3; // Index of the virtual center vertex for the bottom
     vertices.push_back(0); // x
     vertices.push_back(0); // y
@@ -778,7 +773,6 @@ void DrawPrism(float alpha) {
         indices.push_back(j);
         indices.push_back((j + 1) % numVerticesPerSection);
     }
-
 
     // Calculate normals
     for (int i = 0; i < numSections; i++) {
@@ -793,42 +787,44 @@ void DrawPrism(float alpha) {
         }
     }
 
-    // Normals for the top and bottom centers (pointing up and down respectively)
+    // Normals for the top center, pointing up
     normals.push_back(0); // nx
     normals.push_back(0); // ny
     normals.push_back(1); // nz (top face normal)
+
+    // Normals for the bottom center, pointing down
     normals.push_back(0); // nx
     normals.push_back(0); // ny
     normals.push_back(-1); // nz (bottom face normal)
 
 
     // Draw the faces of the prism
-    glColor4f(100/255.0f, 149/255.0f, 237/255.0f, alpha); // Cornflower Blue
+    glColor4f(100 / 255.0f, 149 / 255.0f, 237 / 255.0f, alpha); // Cornflower Blue
     glBegin(GL_TRIANGLES);
     for (size_t i = 0; i < indices.size(); i += 3) {
         glVertex3f(vertices[indices[i] * 3], vertices[indices[i] * 3 + 1], vertices[indices[i] * 3 + 2]);
-        glVertex3f(vertices[indices[i+1] * 3], vertices[indices[i+1] * 3 + 1], vertices[indices[i+1] * 3 + 2]);
-        glVertex3f(vertices[indices[i+2] * 3], vertices[indices[i+2] * 3 + 1], vertices[indices[i+2] * 3 + 2]);
+        glVertex3f(vertices[indices[i + 1] * 3], vertices[indices[i + 1] * 3 + 1], vertices[indices[i + 1] * 3 + 2]);
+        glVertex3f(vertices[indices[i + 2] * 3], vertices[indices[i + 2] * 3 + 1], vertices[indices[i + 2] * 3 + 2]);
     }
     glEnd();
 
 
     // Enable polygon offset fill to offset filled polygons for depth testing
     glEnable(GL_POLYGON_OFFSET_FILL);
-    glPolygonOffset(1.0f, 1.0f); // Offset parameters
+    glPolygonOffset(1.0f, 1.0f); // Offset, so the outline doesnt clip the face
 
-    // Draw the edges in green
+    // Draw the outline
     glColor4f(0.0f, 1.0f, 0.0f, alpha); // Green
-    glLineWidth(2.0f); // Set line width for edges
+    glLineWidth(2.0f);
     glBegin(GL_LINES);
     for (size_t i = 0; i < indices.size(); i += 3) {
         glVertex3f(vertices[indices[i] * 3], vertices[indices[i] * 3 + 1], vertices[indices[i] * 3 + 2]);
-        glVertex3f(vertices[indices[i+1] * 3], vertices[indices[i+1] * 3 + 1], vertices[indices[i+1] * 3 + 2]);
+        glVertex3f(vertices[indices[i + 1] * 3], vertices[indices[i + 1] * 3 + 1], vertices[indices[i + 1] * 3 + 2]);
 
-        glVertex3f(vertices[indices[i+1] * 3], vertices[indices[i+1] * 3 + 1], vertices[indices[i+1] * 3 + 2]);
-        glVertex3f(vertices[indices[i+2] * 3], vertices[indices[i+2] * 3 + 1], vertices[indices[i+2] * 3 + 2]);
+        glVertex3f(vertices[indices[i + 1] * 3], vertices[indices[i + 1] * 3 + 1], vertices[indices[i + 1] * 3 + 2]);
+        glVertex3f(vertices[indices[i + 2] * 3], vertices[indices[i + 2] * 3 + 1], vertices[indices[i + 2] * 3 + 2]);
 
-        glVertex3f(vertices[indices[i+2] * 3], vertices[indices[i+2] * 3 + 1], vertices[indices[i+2] * 3 + 2]);
+        glVertex3f(vertices[indices[i + 2] * 3], vertices[indices[i + 2] * 3 + 1], vertices[indices[i + 2] * 3 + 2]);
         glVertex3f(vertices[indices[i] * 3], vertices[indices[i] * 3 + 1], vertices[indices[i] * 3 + 2]);
     }
     glEnd();
